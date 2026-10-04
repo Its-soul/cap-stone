@@ -1,0 +1,8 @@
+{
+  "status": "NOT RUN",
+  "model_training": "NOT RUN",
+  "model_evaluation": "NOT RUN",
+  "research_experiments": "NOT RUN",
+  "note": "Prepared but intentionally not executed. Run manually in Google Colab.",
+  "results": null
+}

@@ -1,0 +1,114 @@
+status: NOT RUN
+execution_note: Prepared but intentionally not executed. Run manually in Google Colab.
+experiments:
+  - id: E01
+    objective: Detect externally announced dependency version changes.
+    input: Reviewed arithmetic workflow cases with update events.
+    variables: [changed_source, topology, repeated_changes]
+    baseline: A_full_recomputation
+    method: Compare explicit update events with current version changes and impacted bindings.
+    metrics: [detected_event_count, current_version, affected_artifact_count]
+    expected_output: Event-to-impact records, not a predicted success rate.
+    notebook: 05_dependency_experiments.ipynb
+    status: NOT RUN
+    results: null
+  - id: E02
+    objective: Identify certificates directly supported by a changed node.
+    input: Small graph with a certificate whose subject is the changed dependency.
+    variables: [direct_binding_count, changed_dependency]
+    baseline: B_no_invalidation
+    method: Compare graph-edge direct certificates against a manually reviewed affected set.
+    metrics: [direct_set_precision, direct_set_recall, unnecessary_invalidations]
+    expected_output: Direct-set membership and state transition records.
+    notebook: 06_invalidation_experiments.ipynb
+    status: NOT RUN
+    results: null
+  - id: E03
+    objective: Propagate invalidation through evidence, claims and certificate chains.
+    input: Independent and cascading workflows with reviewed expected graph closures.
+    variables: [depth, branching, source_position]
+    baseline: B_no_invalidation
+    method: Compare closure with a separate reference traversal; test historical bindings.
+    metrics: [affected_set_precision, affected_set_recall, invalidated_certificate_ratio]
+    expected_output: Closure records and downstream decision states.
+    notebook: 06_invalidation_experiments.ipynb
+    status: NOT RUN
+    results: null
+  - id: E04
+    objective: Restore affected work while preserving unrelated valid certificates.
+    input: Workflow update cases and configured recovery budgets.
+    variables: [budget_units, affected_fraction, topology]
+    baseline: C_invalidation_only
+    method: Rebuild in dependency order and independently inspect current source support.
+    metrics: [recovery_success_rate, useful_completion_rate, support_valid_commit_rate]
+    expected_output: Restored, blocked and retained artifact records.
+    notebook: 07_recovery_experiments.ipynb
+    status: NOT RUN
+    results: null
+  - id: E05
+    objective: Compare full recomputation with selective recovery under matched tasks.
+    input: Frozen paired workflow cases and identical verification obligations.
+    variables: [affected_fraction, analysis_cost_units, certificate_cost_units]
+    baseline: A_full_recomputation
+    method: Run each policy on fresh copies; include overhead and failed attempts.
+    metrics: [configured_work_units, latency_seconds, savings, useful_completion_rate]
+    expected_output: Paired policy records; work units and measured latency remain separate.
+    notebook: 08_final_benchmark.ipynb
+    status: NOT RUN
+    results: null
+  - id: E06
+    objective: Check certificate/artifact hashes and journal tamper evidence.
+    input: Journal export, artifact hashes and independently retained checkpoint.
+    variables: [edit, reorder, truncation, checkpoint_availability]
+    baseline: Hash-chain verification without an independent checkpoint.
+    method: Apply declared edits to copies; verify against retained length/head.
+    metrics: [tamper_detection_by_case, verification_latency, provenance_bytes]
+    expected_output: Per-case detection records and explicit unsupported attacker powers.
+    notebook: 06_invalidation_experiments.ipynb
+    status: NOT RUN
+    results: null
+  - id: E07
+    objective: Recover after an unavailable/untrusted dependency gains a valid replacement.
+    input: Dependency failure followed by explicit trusted replacement.
+    variables: [failure_kind, replacement_availability, budget_units]
+    baseline: A_full_recomputation
+    method: Block while support is unavailable; replan pending work after replacement.
+    metrics: [blocked_decisions, recovery_success_rate, attempted_cost_units]
+    expected_output: Failure, abstention and replacement recovery records.
+    notebook: 07_recovery_experiments.ipynb
+    status: NOT RUN
+    results: null
+  - id: E08
+    objective: Assess advisory semantic dependency classification.
+    input: Human-reviewed context-bearing dependency pairs with world-disjoint splits.
+    variables: [threshold, domain, false_negative_cost]
+    baseline: Pretrained NLI entailment proxy and deterministic declared edges.
+    method: Predict pairs; evaluate against independent annotation; never delete trusted edges.
+    metrics: [accuracy, precision, recall, f1, brier, ece, false_negative_count]
+    expected_output: Pair predictions and annotation error analysis.
+    notebook: 04_model_evaluation.ipynb
+    status: NOT RUN
+    results: null
+  - id: E09
+    objective: Compare fine-tuned dependency classifier with pretrained NLI proxy.
+    input: Identical frozen paired data, model revision and preprocessing.
+    variables: [training_seed, checkpoint, threshold]
+    baseline: Pretrained NLI entailment proxy.
+    method: Select on validation only; compare held-out predictions after freezing selection.
+    metrics: [accuracy, precision, recall, f1, brier, ece]
+    expected_output: Held-out comparison and failure examples; no improvement assumed.
+    notebook: 04_model_evaluation.ipynb
+    status: NOT RUN
+    results: null
+  - id: E10
+    objective: Probe invalidation/recovery boundaries with explicit injected faults.
+    input: Fault cases for untrusted sources, missing recipes, stale plans and budget exhaustion.
+    variables: [fault_kind, fault_position, graph_depth, budget_units]
+    baseline: All four prepared conceptual policies.
+    method: Inject one declared fault at a time; inspect independent support-validity oracle.
+    metrics: [support_valid_commit_rate, useful_completion_rate, blocked_decisions, provenance_integrity]
+    expected_output: Per-fault outcomes and counterexamples, not a universal fault-tolerance claim.
+    notebook: 08_final_benchmark.ipynb
+    status: NOT RUN
+    results: null
+

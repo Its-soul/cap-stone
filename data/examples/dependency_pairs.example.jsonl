@@ -1,0 +1,7 @@
+{"pair_id":"format-1","world_id":"supplier-a","premise":"In task A, supplier A is eligible.","hypothesis":"Task A selects supplier A using its eligibility status.","label":1,"source":"authored-format-example-not-research-data"}
+{"pair_id":"format-2","world_id":"supplier-b","premise":"In task B, supplier B is eligible.","hypothesis":"Task B displays the user's preferred language, independent of supplier eligibility.","label":0,"source":"authored-format-example-not-research-data"}
+{"pair_id":"format-3","world_id":"policy-c","premise":"Task C requires a payment limit of 500 units.","hypothesis":"Task C approves a payment after checking that limit.","label":1,"source":"authored-format-example-not-research-data"}
+{"pair_id":"format-4","world_id":"policy-d","premise":"Task D uses a payment limit of 700 units.","hypothesis":"Task D changes its font based only on the screen resolution.","label":0,"source":"authored-format-example-not-research-data"}
+{"pair_id":"format-5","world_id":"source-e","premise":"Task E uses the source value 12.","hypothesis":"Task E computes its sum using the source value.","label":1,"source":"authored-format-example-not-research-data"}
+{"pair_id":"format-6","world_id":"source-f","premise":"Task F uses the source value 14.","hypothesis":"Task F logs a fixed application version that does not use the source value.","label":0,"source":"authored-format-example-not-research-data"}
+

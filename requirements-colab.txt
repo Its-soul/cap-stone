@@ -1,0 +1,10 @@
+-r requirements.txt
+transformers==4.57.1
+datasets>=3.6,<5
+accelerate>=1.0,<2
+torch>=2.6,<3
+numpy>=1.26,<3
+sentencepiece>=0.2,<0.3
+protobuf>=5,<7
+safetensors>=0.4,<1
+
