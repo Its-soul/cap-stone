@@ -1,61 +1,93 @@
-# Architecture
+# Architecture and API
 
-```mermaid
-flowchart TD
-  D["Versioned dependency"] --> E[Evidence]
-  E --> Q[Claim]
-  Q --> V["Trusted verification"]
-  V --> C[Certificate]
-  C --> A["Mock decision commit"]
-  D --> I["Change and impact closure"]
-  I --> R["Invalidate and plan recovery"]
-  R --> E
+`CertificateSystem` owns the versioned dependency graph, certificate store,
+verifier/rebuilder registry and hash-chained audit journal. Support edges point
+from an exact artifact ID/version to a consumer. The public package imports no
+model libraries and performs no network requests.
+
+## Build and recover
+
+```python
+from cert_recovery import ArtifactKind, CertificateSystem, VerificationResult
+
+system = CertificateSystem()
+
+def matches_source(subject, ancestry):
+    sources = [node for node in ancestry if node.kind == ArtifactKind.DEPENDENCY]
+    passed = bool(sources) and all(
+        node.payload["value"] == subject.payload["value"] for node in sources
+    )
+    return VerificationResult(passed, "claim must equal its declared source")
+
+def rebuild_value(previous, current_supports):
+    return {"value": current_supports[0].payload["value"]}
+
+system.register_verifier("matches-source", matches_source)
+source = system.add_dependency("source", {"value": 4})
+claim = system.add_artifact("claim", ArtifactKind.CLAIM, {"value": 4}, (source,))
+system.register_rebuilder("claim", rebuild_value)
+certificate = system.issue_certificate("certificate", claim, "matches-source")
+decision = system.add_artifact(
+    "decision", ArtifactKind.DECISION, {"action": "mock-accept"}, (certificate,)
+)
+system.register_rebuilder(
+    "decision", lambda previous, supports: {"action": "mock-accept"}
+)
+system.commit_decision(decision)
+
+impact = system.change_dependency("source", {"value": 9})
+assert not system.is_valid(certificate)
+outcome = system.execute_recovery(system.plan_recovery(impact))
+assert outcome.status == "COMPLETE"
+assert system.latest("claim").payload == {"value": 9}
+system.commit_decision(system.latest("decision").ref)
 ```
 
-`src/cert_recovery/` contains small modules: `models`, `graph`, `certificates`,
-`provenance`, `crypto`, `engine`, `metrics`, `config`, `data_pipeline`,
-`model_pipeline`, `evaluation`, and future agent `interfaces`.
+This arithmetic rule is a usage example, not a general-purpose verifier. A failed
+registered verifier, missing recipe, untrusted support, revoked authority or
+insufficient recovery budget blocks affected work.
 
-## Core rules
-- Support → consumer edges bind exact ID/version pairs. IDs cannot change kind;
-  logical cycles and missing supports are rejected.
-- Dependency updates add versions; removal adds an untrusted tombstone.
-  Consumers of **all earlier versions** are considered, including repeated changes before recovery.
-- `invalidate_artifact` handles disputed evidence/intermediate claims; explicit
-  certificate revocation is separate and cannot be automatically reversed.
-- Every affected derived node is invalid until rebuilt. Certificates are reissued
-  only after a registered task verifier passes with current support.
-- A rebuilder receives old metadata and current supports. It must recompute its
-  result. Missing recipes, failed checks, revoked authority and insufficient budgets block.
-- Recovery is topological. Among ready nodes, prioritize downstream decision
-  reach and then lower configured cost. No claim of optimal scheduling is made.
-- `VALID → INVALID → PENDING_REVERIFICATION → SUPERSEDED` describes the old
-  certificate during successful recovery; a **new** certificate becomes `VALID`.
-  Reverification failure returns the old state to `INVALID`. `REVOKED` and
-  `SUPERSEDED` are terminal. Recovery is an event, not a redundant state.
-- `commit_decision` checks the entire current ancestry under the same lock as
-  journal commit. It performs a mock action only. Epochs reject delayed issuance
-  requests and stale recovery plans. Unaffected certificates retain validity.
+## Freshness and certificate lifecycle
 
-## Integrity and limits
-Artifact payloads are frozen JSON strings; access returns a copy. SHA-256 binds
-complete artifact content and support references. Certificate dependency hashes
-bind the subject ancestry. The append-only journal records creations, checks,
-transitions, plans and commits. Historical statuses are preserved as events.
+Artifacts are immutable JSON snapshots; payload access returns a copy. Supports
+bind exact versions. Cycles, missing supports and artifact-ID kind changes are
+rejected. Changes consider consumers of all earlier source versions, including
+repeated updates before recovery.
 
-| Mechanism | Role / current status |
-|---|---|
-| Hash chain | Implemented. Ordered-event edit/reorder detection; truncation needs an independently retained length/head checkpoint. |
-| Merkle tree | Design only. Useful for inclusion proofs at larger scale; no proof of completeness or truth by itself. |
-| Digital signature | Protocol/design only. Future signing authenticates a retained checkpoint; key custody must be specified. |
+Successful recovery moves the old certificate through
+`VALID -> INVALID -> PENDING_REVERIFICATION -> SUPERSEDED`; a newly issued
+certificate becomes `VALID`. Revoked and superseded certificates are terminal.
+Recovery rebuilds derived work rather than copying old claims. Independent valid
+branches remain usable. `commit_decision` checks the entire current ancestry under
+the engine lock and records only a mock action. Epoch checks reject stale plans
+and delayed, explicitly fenced verification requests.
 
-An attacker controlling both journal and checkpoint can rewrite the history.
-Hashes prove no semantic truth, source honesty, causal effect or missing-edge
-completeness. Encoding is project JSON canonicalization, not full RFC 8785.
-Verifiers, rebuilders, core process and dependency capture are trusted. No
-Byzantine tolerance, durable storage, distributed atomicity or real external
-action transaction is implemented. Direct graph/store mutation bypasses the core.
+## Optional semantic annotations
 
-Graph reachability is a conservative impact set relative to recorded edges.
-It does **not** establish the minimal true causal set. Certificate fingerprints
-are integrity receipts for declared checks, not general proofs of AI correctness.
+The repository-root `semantic_advice.py` adapter consumes schema-2 client records;
+it never submits inference. `prepare` captures ordered artifact IDs, versions,
+complete hashes and text, with a request identity binding them. `consume` checks
+correlation/provenance and reparses the raw response through the reviewed profile.
+
+The engine checks integrity, current versions and valid ancestry under its lock
+before recording `ACCEPTED`, `IGNORED` or `REJECTED_STALE` with reasons. Acceptance
+is an annotation at consumption time, not permanent freshness. Consume again
+before subsequent use; never rebind old advice to new artifacts.
+
+NLI labels remain separate from dependency judgments. Advice does not delete
+trusted edges, alter verifier outcomes, issue certificates, mutate recovery
+plans or authorize decisions. A failed deterministic obligation remains failed;
+advice failure does not add an obligation to an otherwise sufficient workflow.
+
+## Integrity and trust
+
+SHA-256 binds artifact contents and certificate dependency snapshots. Audit-chain
+checks detect ordered edits/reordering; truncation requires an independently
+retained length/head checkpoint. Control of both journal and checkpoint permits
+rewriting history. Canonicalization is project JSON, not full RFC 8785.
+
+Dependency capture, registered rules and the process are trusted. There is no
+signature implementation, Byzantine tolerance, durable storage or distributed
+atomicity. Direct graph/store mutation bypasses the facade. Graph closure is
+conservative only relative to declared edges; missing edges are not discovered
+by hashing or semantic advice.
