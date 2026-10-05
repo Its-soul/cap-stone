@@ -9,6 +9,13 @@ description = "Deterministic foundation for dependency-aware certificate invalid
 requires-python = ">=3.11"
 dependencies = ["PyYAML>=6.0,<7"]
 
+[project.optional-dependencies]
+remote = [
+    "gradio-client==2.7.2",
+    "huggingface-hub==2.1.1",
+    "python-dotenv==1.2.4",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
