@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "status": "PREPARED_NOT_RUN",
+  "reviewed_at_utc": "2026-10-05T04:26:59.780031+00:00",
+  "dataset_sha256": "3a163f59f8c14c912eff25c7d94012cac4224a646199042ec759a07aeda37789",
+  "case_ids": [
+    "nli-003"
+  ],
+  "models": {
+    "deberta": {
+      "model_id": "cross-encoder/nli-deberta-v3-small",
+      "revision": "fa2804872c3b4bd748f38c0185cc85775361e735",
+      "reviewed_config": {
+        "_name_or_path": "microsoft/deberta-v3-small",
+        "architectures": [
+          "DebertaV2ForSequenceClassification"
+        ],
+        "attention_probs_dropout_prob": 0.1,
+        "hidden_act": "gelu",
+        "hidden_dropout_prob": 0.1,
+        "hidden_size": 768,
+        "id2label": {
+          "0": "contradiction",
+          "1": "entailment",
+          "2": "neutral"
+        },
+        "initializer_range": 0.02,
+        "intermediate_size": 3072,
+        "label2id": {
+          "contradiction": 0,
+          "entailment": 1,
+          "neutral": 2
+        },
+        "layer_norm_eps": 1e-07,
+        "max_position_embeddings": 512,
+        "max_relative_positions": -1,
+        "model_type": "deberta-v2",
+        "norm_rel_ebd": "layer_norm",
+        "num_attention_heads": 12,
+        "num_hidden_layers": 6,
+        "pad_token_id": 0,
+        "pooler_dropout": 0,
+        "pooler_hidden_act": "gelu",
+        "pooler_hidden_size": 768,
+        "pos_att_type": [
+          "p2c",
+          "c2p"
+        ],
+        "position_biased_input": false,
+        "position_buckets": 256,
+        "relative_attention": true,
+        "share_att_key": true,
+        "torch_dtype": "float32",
+        "transformers_version": "4.11.3",
+        "type_vocab_size": 0,
+        "vocab_size": 128100
+      },
+      "config_sha256": "885d0dceae8fa5c136da9209121ec9eb11160488e840de3bc1f29353674e5712",
+      "config_url": "https://huggingface.co/cross-encoder/nli-deberta-v3-small/resolve/fa2804872c3b4bd748f38c0185cc85775361e735/config.json",
+      "model_card_url": "https://huggingface.co/cross-encoder/nli-deberta-v3-small/resolve/fa2804872c3b4bd748f38c0185cc85775361e735/README.md",
+      "model_card_sha256": "a9aa108025ad1984374c5e80365406bafe331aea5abc30239e1796ec0a7c267d",
+      "reviewed_label_order": [
+        "contradiction",
+        "entailment",
+        "neutral"
+      ],
+      "label_order_evidence": "published model card and pinned config; not Space runtime attestation",
+      "role": "configured_project_model"
+    },
+    "minilm_fallback": {
+      "model_id": "cross-encoder/nli-MiniLM2-L6-H768",
+      "revision": "b95119ce93d3e065de6214e38cd4a97b0f2f2c6d",
+      "reviewed_config": {
+        "_name_or_path": "nreimers/MiniLMv2-L6-H768-distilled-from-RoBERTa-Large",
+        "architectures": [
+          "RobertaForSequenceClassification"
+        ],
+        "attention_probs_dropout_prob": 0.1,
+        "bos_token_id": 0,
+        "eos_token_id": 2,
+        "gradient_checkpointing": false,
+        "hidden_act": "gelu",
+        "hidden_dropout_prob": 0.1,
+        "hidden_size": 768,
+        "id2label": {
+          "0": "contradiction",
+          "1": "entailment",
+          "2": "neutral"
+        },
+        "initializer_range": 0.02,
+        "intermediate_size": 3072,
+        "label2id": {
+          "contradiction": 0,
+          "entailment": 1,
+          "neutral": 2
+        },
+        "layer_norm_eps": 1e-05,
+        "max_position_embeddings": 514,
+        "model_type": "roberta",
+        "num_attention_heads": 12,
+        "num_hidden_layers": 6,
+        "pad_token_id": 1,
+        "position_embedding_type": "absolute",
+        "transformers_version": "4.6.1",
+        "type_vocab_size": 1,
+        "use_cache": true,
+        "vocab_size": 50265
+      },
+      "config_sha256": "8b0e41caff7567c0f53e6983f35591c3dec59507c9173ab125c5823394fb57f3",
+      "config_url": "https://huggingface.co/cross-encoder/nli-MiniLM2-L6-H768/resolve/b95119ce93d3e065de6214e38cd4a97b0f2f2c6d/config.json",
+      "model_card_url": "https://huggingface.co/cross-encoder/nli-MiniLM2-L6-H768/resolve/b95119ce93d3e065de6214e38cd4a97b0f2f2c6d/README.md",
+      "model_card_sha256": "1a6e3f880df3584acc1b209c7c667eb22cb7ddd98ab56a5905dda5cfc446ddd1",
+      "reviewed_label_order": [
+        "contradiction",
+        "entailment",
+        "neutral"
+      ],
+      "label_order_evidence": "published model card and pinned config; not Space runtime attestation",
+      "role": "source_fallback_comparison_not_verified_space_model"
+    }
+  }
+}

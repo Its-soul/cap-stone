@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "dataset_id": "authored-nli-smoke-v1",
+  "task": "natural_language_inference",
+  "description": "Fixed authored text-pair smoke cases. Expected labels are NLI relations, not semantic-dependency annotations or research evidence. Expected labels are never sent to the Space.",
+  "cases": [
+    {"id": "nli-001", "input": {"premise": "A man is eating pizza.", "hypothesis": "A man is eating food."}, "expected_label": "entailment"},
+    {"id": "nli-002", "input": {"premise": "A man is eating pizza.", "hypothesis": "The man is not eating anything."}, "expected_label": "contradiction"},
+    {"id": "nli-003", "input": {"premise": "A man is eating pizza.", "hypothesis": "The man owns a bicycle."}, "expected_label": "neutral"},
+    {"id": "nli-004", "input": {"premise": "Supplier A is eligible for this task.", "hypothesis": "Supplier A is eligible."}, "expected_label": "entailment"},
+    {"id": "nli-005", "input": {"premise": "Supplier A is eligible for this task.", "hypothesis": "Supplier A is not eligible for this task."}, "expected_label": "contradiction"},
+    {"id": "nli-006", "input": {"premise": "Supplier A is eligible for this task.", "hypothesis": "Supplier A has a blue delivery van."}, "expected_label": "neutral"}
+  ]
+}
