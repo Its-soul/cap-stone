@@ -1,0 +1,52 @@
+{
+  "fixture_type": "recorded_response_not_new_inference",
+  "source_log": "results/baseline_20261004T191751_143732Z_92fe1ace.json",
+  "source_log_sha256": "da832235a1adae89a6d6d46b6d82c028e21131136c1583d7e0fe50f1208a1798",
+  "dataset_sha256": "3a163f59f8c14c912eff25c7d94012cac4224a646199042ec759a07aeda37789",
+  "record": {
+    "schema_version": 2,
+    "run_id": "baseline_20261004T191751_143732Z_92fe1ace",
+    "test_id": "nli-003",
+    "timestamp": "2026-10-04T19:18:02.434284+00:00",
+    "input": {
+      "premise": "A man is eating pizza.",
+      "hypothesis": "The man owns a bicycle."
+    },
+    "expected_label": "neutral",
+    "space_id": "MridulSharma02/contradiction-detector",
+    "api_name": "/contradiction_detector",
+    "profile": "nli-zero-gpu",
+    "reviewed_space_revision": "f08cb1f21f447e96f7703b9c6b7c477ca2843f91",
+    "configured_model_id": "cross-encoder/nli-deberta-v3-small",
+    "fallback_model_id": "cross-encoder/nli-MiniLM2-L6-H768",
+    "verified_loaded_model_id": null,
+    "loaded_model_revision": null,
+    "model_identity_status": "UNKNOWN",
+    "output": "\n<div style=\"background:#1e1e2e;border-radius:12px;padding:20px;font-family:sans-serif;\">\n  <div style=\"font-size:1.6em;font-weight:bold;color:#ff4b4b;margin-bottom:8px;\">\n    ❌ Contradiction\n  </div>\n  <div style=\"color:#aaa;font-size:0.95em;margin-bottom:16px;\">\n    Confidence: <strong style=\"color:white;\">99.57%</strong>\n  </div>\n  <hr style=\"border-color:#333;margin-bottom:16px;\">\n  <div style=\"color:#ccc;font-size:0.9em;\">\n    <strong style=\"color:white;\">NLTK Analysis</strong><br><br>\n    🔤 <b>Token Overlap:</b> 0.3333<br>\n    🔗 <b>WordNet Similarity:</b> 0.1947<br>\n    📌 <b>Common Tokens:</b> man\n  </div>\n</div>\n",
+    "normalized_output": {
+      "original_label": "Contradiction",
+      "label": "contradiction",
+      "branch": "model",
+      "branch_evidence": "inferred_from_service_label_and_reviewed_source",
+      "branch_attested": false,
+      "confidence_text": "99.57%",
+      "confidence": 0.9956999999999999,
+      "confidence_origin": "rounded_model_softmax",
+      "probabilities": null,
+      "nltk_features": {
+        "token_overlap": 0.3333,
+        "wordnet_similarity": 0.1947
+      },
+      "advisory_only": true
+    },
+    "execution_status": "SUCCESS",
+    "transport_status": "SUCCESS",
+    "parsing_status": "SUCCESS",
+    "classification_status": "SUCCESS",
+    "matches_expected_label": false,
+    "error": null,
+    "latency_seconds": 2.1049025000538677,
+    "latency_scope": "end-to-end client request, including network, queue, service and response validation",
+    "completed_at": "2026-10-04T19:18:04.539229+00:00"
+  }
+}
