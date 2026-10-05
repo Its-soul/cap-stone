@@ -1,7 +1,8 @@
 """Optional direct-model Colab smoke; no imports/downloads before manual guards.
 
-This records one fixed pair per model, without a Space heuristic wrapper, research
-metrics, certificate authority, or automatic retries. Offline tests use fixtures.
+This defaults to one fixed pair per model; all_cases=True opts into the six fixed
+pairs. It has no Space wrapper, certificate authority or automatic inference retries.
+Offline tests use fixtures.
 """
 
 from datetime import datetime, timezone
@@ -14,7 +15,7 @@ import platform
 from time import perf_counter
 import uuid
 
-from .config import require_manual
+from .config import require_manual, resolve_path
 
 
 def sha256_file(path):
@@ -37,7 +38,7 @@ def validate_label_order(config, reviewed_order):
     return order
 
 
-def prepare_smoke(root, profile):
+def prepare_smoke(root, profile, *, all_cases=False):
     """Pure offline preflight; preserves directional text and checks immutable pins."""
     root = Path(root)
     spec = json.loads((root / "config/pinned_smoke_models.json").read_text(encoding="utf-8"))
@@ -53,8 +54,8 @@ def prepare_smoke(root, profile):
     # Deliberately bounded smoke, not the six-case baseline or an evaluation.
     if spec["case_ids"] != ["nli-003"]:
         raise ValueError("This prepared smoke is bounded to case nli-003")
-    cases = [case for case in dataset["cases"] if case["id"] in spec["case_ids"]]
-    if len(cases) != 1:
+    cases = dataset["cases"] if all_cases else [case for case in dataset["cases"] if case["id"] in spec["case_ids"]]
+    if len(cases) != (6 if all_cases else 1) or len({case["id"] for case in cases}) != len(cases):
         raise ValueError("Missing or duplicate smoke case")
     return {"model": model, "cases": cases, "dataset_sha256": spec["dataset_sha256"],
             "spec_sha256": sha256_file(root / "config/pinned_smoke_models.json")}
@@ -79,10 +80,10 @@ def save_new(path, document):
         stream.write("\n")
 
 
-def run_pinned_smoke(config, profile, *, manual=False):
+def run_pinned_smoke(config, profile, *, manual=False, all_cases=False):
     require_manual(config, "allow_model_inference", manual)
     root = Path(config["project_root"])
-    plan = prepare_smoke(root, profile)
+    plan = prepare_smoke(root, profile, all_cases=all_cases)
     # No model packages/network are touched until both guards and offline preflight pass.
     import torch
     from huggingface_hub import hf_hub_download
@@ -105,7 +106,7 @@ def run_pinned_smoke(config, profile, *, manual=False):
         raise ValueError("Resolved configuration revision is not the reviewed immutable pin")
     validate_label_order(actual_config.to_dict(), order)
     run_id = "pinned_smoke_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ_") + uuid.uuid4().hex[:8]
-    destination = root / "results"
+    destination = resolve_path(config, "results")
     destination.mkdir(parents=True, exist_ok=True)
     prepared = {"schema_version": 1, "run_id": run_id, "execution_status": "PREPARED",
                 "workflow": "direct_pinned_model_smoke_without_space_wrapper", "profile": profile,
@@ -126,6 +127,13 @@ def run_pinned_smoke(config, profile, *, manual=False):
     try:
         torch.manual_seed(42)
         tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision, trust_remote_code=False)
+        # Persist the actual tokenizer bytes alongside the result, including its config.
+        tokenizer_dir = destination / (run_id + ".tokenizer")
+        tokenizer_dir.mkdir()
+        saved_tokenizer = tokenizer.save_pretrained(tokenizer_dir)
+        if isinstance(saved_tokenizer, (tuple, list)):
+            result["tokenizer_files"] = {Path(path).name: sha256_file(path)
+                                         for path in saved_tokenizer if Path(path).is_file()}
         model, loading = AutoModelForSequenceClassification.from_pretrained(
             model_id, revision=revision, config=actual_config, trust_remote_code=False,
             use_safetensors=True, output_loading_info=True)
