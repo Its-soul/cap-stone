@@ -1,43 +1,79 @@
-# Dependency-aware certificate invalidation and recovery
+# Certificate recovery
 
-Foundation prototype. The core works without an LLM, GPU, network, or database.
-PAFA is reference material only; this implementation uses the scoped certificate design.
+A Python prototype for keeping verified work consistent when its inputs change.
+It records exact artifact versions and their dependencies, invalidates affected
+certificates, and rebuilds and reverifies affected work while preserving unrelated
+valid branches.
 
-## Run code correctness tests
+```text
+Dependency change -> affected work becomes invalid -> rebuild -> verify -> new certificate
+```
 
-```bash
-python -m pip install -r requirements.txt
-PYTHONPATH=src python -m unittest discover -s tests -v
+The in-memory core provides a dependency DAG, immutable JSON artifacts, registered
+verifier/rebuilder functions, explicit certificate lifecycles, a mock decision
+commit gate, and a SHA-256 audit chain. Python 3.11+ and PyYAML are sufficient for
+the core; Gradio/Hugging Face clients and PyTorch/Transformers are optional.
+
+## Install and test
+
+Run from the repository root. On Windows, use `py -3` in place of `python` if needed.
+
+```sh
+python -m venv .venv
+# Activate: Windows PowerShell .\.venv\Scripts\Activate.ps1
+# Activate: macOS/Linux source .venv/bin/activate
+python -m pip install -e ".[remote]"
+python -m unittest discover -s tests -q
+python -m unittest discover -s tests/remote -q
+python -m unittest discover -s tests/integration -q
 python scripts/validate_preparation.py
 ```
 
-These are small deterministic tests, not research experiments. No model packages
-are needed. See `tests/test_engine.py` for a complete API usage example.
-For a local editable install (including Windows), use `python -m pip install -e .`
-and then `python -m unittest discover -s tests -v` without `PYTHONPATH`.
+`python -m pip install -e .` installs only the core. The remote extra is needed
+for the client and integration test suites; those tests block network connections.
+The current suites contain **44 core/preparation, 40 client, and 14 integration
+tests (98 unique tests)**. They establish behavior on fixtures, not model quality
+or research performance. See [architecture and API](docs/ARCHITECTURE.md) for
+using the engine and its authority boundary.
 
-## Included
+## Configuration and optional models
 
-- `src/cert_recovery/`: deterministic core plus guarded future data/model/evaluation code.
-- `config/`: centralized settings and ten experiment definitions.
-- `notebooks/`: the eight requested unexecuted Colab notebooks.
-- `tests/`: deterministic correctness tests, including guard and data-leakage checks.
-- `docs/`: status, TODO, architecture, data/model plans, experiments and decisions.
-- `data/examples/`: tiny authored input-format examples, not a research dataset.
-- `results/`: execution-status manifest only; no experimental results.
+[`config/config.yaml`](config/config.yaml) defines paths, recovery costs/budgets,
+and optional data/model settings. All workload flags default to false. Model,
+data-preparation and research entry points also require `manual=True`; ordinary
+core operations do not.
 
-## Future manual Colab workflow
+The optional client sends premise/hypothesis pairs to reviewed Hugging Face
+Spaces, validates their API/response contracts, and writes a fresh timestamped
+JSON result for every run. It downloads no weights. Copy `.env.example` to `.env`
+only when needed; anonymous access is supported, or set a Hugging Face READ token.
+Never commit credentials. Inspect the CLI without submitting anything:
 
-Upload the project ZIP and the notebook you want to Colab. The first notebook
-cell extracts the ZIP and locates the project. Read each notebook's setup notes.
-All eight notebooks have empty outputs and no execution counts. Model/research
-calls are guarded by flags that default to false.
+```sh
+python run_baseline.py --help
+```
 
-**Prepared but intentionally not executed. Run manually in Google Colab.**
-Model training, model evaluation, and research experiments are **NOT RUN**.
+Future remote calls require explicit alternative-model opt-in, available free
+service/quota, and authorization for inference. Setup, response semantics and
+pinned direct-model preparation are described in [model/client guidance](docs/MODEL.md).
+The six fixed cases and minimal recorded-response fixture are public; generated
+logs and private datasets are excluded. Data formats are in [DATA.md](docs/DATA.md).
 
-Start with `docs/PROJECT_STATUS.md`, `docs/ARCHITECTURE.md`, and `docs/TODO.md`.
-Dataset annotations and external benchmark adapters remain future work.
-Do not interpret configured cost units or unit-test assertions as research results.
-Hashes detect edits relative to retained content/checkpoints; they do not authenticate
-a maliciously rewritten checkpoint or establish semantic/causal truth.
+**Semantic advice cannot override deterministic verification.** Advice binds exact
+artifact IDs, versions, hashes and text. Stale advice is rejected; unavailable or
+ambiguous advice is ignored. Entailment does not automatically establish a required
+dependency, and confidence cannot issue certificates or authorize decisions.
+
+## Limits
+
+This is a trusted-process, in-memory prototype. Source changes and dependency
+edges must be supplied by callers. Verifiers/rebuilders must implement real task
+rules. Hashes detect certain edits; they do not prove truth or authenticate a
+checkpoint controlled by the same attacker. There is no durable storage,
+distributed transaction or real external action implementation.
+
+Remote loaded weights remain unverified. A retained fixture records contradiction
+at 99.57% for a neutral pizza/bicycle pair; successful transport is not semantic
+correctness. Confidence is advisory and not assumed calibrated. Configured
+DeBERTa, real Colab compatibility, training and research performance remain untested.
+The optional notebook is disabled and has no execution outputs.
