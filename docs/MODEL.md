@@ -60,15 +60,19 @@ are unresolved.
 
 `notebooks/02_baseline_model.ipynb` is a usage example for separate pinned DeBERTa
 and MiniLM comparisons, with all execution/installation flags false and outputs
-empty. It needs no processed research dataset. Each comparison uses unchanged
-`nli-003` only and bypasses the Space/NLTK wrapper.
+empty. It needs no processed research dataset. Each notebook comparison uses all
+six unchanged pairs, including `nli-003`, and bypasses the Space/NLTK wrapper. The
+library's default remains a single-case smoke; `all_cases=True` explicitly opts
+into six.
 
 `config/pinned_smoke_models.json` stores immutable revisions, reviewed configurations,
 class order and dataset hash. `cert_recovery.pinned_smoke` checks bindings before
 heavy imports/downloads and requires both model-inference permission in config and
 `manual=True`. In a future authorized free Colab session, install
 `requirements-colab.txt` separately from the remote-client environment and enable
-only the chosen smoke flag. Actual Colab/package/model execution remains untested.
+only the chosen smoke flag. Colab execution remains unverified; each local run
+records its own actual runtime and status. Empty notebook outputs or the profile's
+preparation status do not describe a separately executed run.
 
 A fresh preparation JSON captures exact pair, dataset/config/code/spec hashes,
 runtime versions, reviewed model config and resolved revision before loading
@@ -78,8 +82,45 @@ prediction, expected-label agreement, timing or errors. Probabilities use explic
 stable float64 softmax of captured logits and remain advisory. These direct runs
 cannot retrospectively identify the Space's weights.
 
-The general `config.yaml` model revision `main` belongs to guarded experimental
-helpers; it is not the immutable smoke pin. Data/training/evaluation helper modules
-remain for development and fixture tests. Their research execution and configured
-DeBERTa performance have not been validated. No production, calibration or research
-performance claim follows from the offline tests.
+The general `config.yaml` revision `main` is an inactive default. Executed model
+pipelines require an immutable revision. The bounded pilot copies the reviewed
+DeBERTa pin into its private configuration; public execution flags remain false.
+Its initial two-class dependency head replaces the three-class NLI head and is
+trained from a seed, never described as a resumed or already trained model.
+
+## Pilot training and evaluation
+
+`scripts/run_pilot.py --execute` reuses `prepare_data`, `run_pretrained_baseline`,
+`run_finetuning`, `run_model_evaluation` and the certificate workflow evaluator.
+It runs one two-epoch training configuration, batch size 2, maximum pair length
+128, learning rate 2e-5, weight decay .01 and seed 42. CPU uses float32; automatic
+device placement also supports CUDA. A tokenization audit rejects truncation of
+training/validation task context. Training logs every optimizer step, validates
+each epoch and selects the best checkpoint by validation macro F1 with the existing
+early-stopping settings. It saves actual selected weights/tokenizer, Trainer state,
+loss curves, split/config bindings and digests. Resume must be explicit and point
+to a real checkpoint with model, optimizer, scheduler and Trainer state, within
+the same bound run; a nonempty destination cannot become an accidental fresh run.
+
+The dependency threshold is selected on validation and persisted before held-out
+inference. Evaluation verifies the config, splits and selected weight bytes and
+uses that frozen threshold. No retuning follows held-out inspection. The comparison
+uses DeBERTa NLI entailment probability as a proxy on the same dependency rows,
+with its own validation threshold. That proxy has a different training objective;
+its aggregate binary scores are not calibrated dependency probabilities. Original
+three-class logits/probabilities are also retained. Confusion matrices, both classes'
+precision/recall/F1, macro F1, false-negative dependency counts, Brier/ECE summaries
+and error examples are descriptive measurements of a tiny synthetic sample.
+Existing model-selection/evaluation records cannot be overwritten or silently
+reinferred; use offline report replay or a new result directory. Completed training
+selections likewise cannot become accidental resume runs.
+
+Direct immutable loading records base weight digests, verified configurations,
+label order and loading information; only the expected classifier shape change is
+allowed during initial fine-tuning. Model confidence still cannot authorize a
+certificate or override deterministic verification. Direct findings cannot identify
+the historical Space's unverified local/fallback weights.
+
+The implementation follows the versioned [Transformers Trainer contract](https://huggingface.co/docs/transformers/v4.57.1/trainer).
+Generated private reports distinguish actual execution from preparation and say
+**PRELIMINARY / EXPERIMENTAL — not final or production results.**
