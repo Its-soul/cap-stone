@@ -20,6 +20,12 @@ class EvidenceProvider(Protocol):
 
 
 class SemanticDependencyAnalyzer(Protocol):
+    """Optional dependency-task probabilities; NLI confidence is not this judgment.
+
+    Version-bound NLI annotations use the separate optional semantic_advice
+    adapter. Neither interface grants graph or certificate authority.
+    """
+
     def predict_pairs(self, pairs: list[tuple[str, str]]) -> list[float]: ...
 
 

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import json
 from math import isfinite
 from threading import RLock
 from typing import Any
 
 from .certificates import CertificateStore
-from .crypto import sha256
+from .crypto import canonical_json, sha256
 from .graph import DependencyGraph
 from .interfaces import Rebuilder, Verifier
 from .models import (Artifact, ArtifactKind, Certificate, CertificateStatus, ImpactReport,
@@ -59,6 +60,45 @@ class CertificateSystem:
     def checkpoint(self):
         with self._lock:
             return self._journal.checkpoint()
+
+    def record_semantic_advice(self, bindings: tuple[tuple[Ref, str], ...], annotation: dict) -> dict:
+        """Check exact input freshness and append advice only to the audit journal.
+
+        This hook has no graph, lifecycle, verifier, recovery or commit authority.
+        Checking and recording share the mutation lock. Even unchanged derived
+        inputs are stale when their ancestry has been invalidated.
+        """
+        with self._lock:
+            if not bindings or annotation.get("disposition") not in {"ACCEPTED", "IGNORED"}:
+                raise ValueError("Advice requires bindings and an annotation disposition")
+            record = json.loads(canonical_json(annotation))
+            record["input_bindings"] = [{**ref.to_dict(), "content_hash": digest} for ref, digest in bindings]
+            failures = []
+            for ref, digest in bindings:
+                try:
+                    node = self._graph.get(ref)
+                    if self._graph.latest_ref(ref.artifact_id) != ref:
+                        reason = "input_version_changed"
+                    elif node.content_hash != digest or not node.integrity_valid():
+                        reason = "input_hash_mismatch"
+                    elif not self._is_valid(ref):
+                        reason = "input_or_ancestry_invalid"
+                    else:
+                        continue
+                except KeyError:
+                    reason = "input_artifact_missing"
+                failures.append({**ref.to_dict(), "reason": reason})
+            record["freshness_failures"] = failures
+            if failures:
+                record["disposition"] = "REJECTED_STALE"
+                record["response_reason"] = record["reason"]
+                record["reason"] = "Exact input bindings are no longer current, intact and valid"
+                record["nli_relation"] = None
+            # The boundary itself clears any claimed dependency judgment.
+            record["dependency_judgment"] = None
+            record["advisory_only"] = True
+            self._journal.append("semantic_advice", record)
+            return record
 
     def provenance(self, ref: Ref) -> tuple[Artifact, ...]:
         with self._lock:
