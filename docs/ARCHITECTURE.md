@@ -91,3 +91,25 @@ signature implementation, Byzantine tolerance, durable storage or distributed
 atomicity. Direct graph/store mutation bypasses the facade. Graph closure is
 conservative only relative to declared edges; missing edges are not discovered
 by hashing or semantic advice.
+
+## Bounded pilot execution
+
+The optional pilot calls the existing data, model and workflow entry points;
+it does not replace the certificate engine. Its semantic dependency classifier
+and NLI proxy are evaluated separately from the deterministic policy experiment.
+There is no path from a model probability to certificate issuance or decision
+authorization. Synthetic supervision comes from the declared source-sum contract,
+with an intervention witness and family-isolated data splits.
+
+Each workflow/policy/repetition starts with a fresh system. The no-invalidation
+control intentionally leaves stale support in its cache; an independent arithmetic
+and freshness oracle counts unsafe committed decisions. Invalidation-only blocks
+affected work without rebuilding it. Full recomputation and selective recovery
+are compared using support-valid useful completion alongside work and timing.
+Configured work units are separate from measured local wall time, including
+setup, verification/commit and outer reporting overhead. Blocking and failed
+attempts are retained, and paired comparisons keep repetitions distinct.
+
+Result bundles are ignored private artifacts. A static local HTML report embeds
+measured plots/tables and explicitly identifies missing stages. Ordinary imports,
+offline tests and default notebook/config flags perform no experiment.

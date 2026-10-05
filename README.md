@@ -31,8 +31,8 @@ python scripts/validate_preparation.py
 
 `python -m pip install -e .` installs only the core. The remote extra is needed
 for the client and integration test suites; those tests block network connections.
-The current suites contain **44 core/preparation, 40 client, and 14 integration
-tests (98 unique tests)**. They establish behavior on fixtures, not model quality
+The current suites contain **56 core/preparation, 40 client, and 14 integration
+tests (110 unique tests)**. They establish behavior on fixtures, not model quality
 or research performance. See [architecture and API](docs/ARCHITECTURE.md) for
 using the engine and its authority boundary.
 
@@ -74,6 +74,38 @@ distributed transaction or real external action implementation.
 
 Remote loaded weights remain unverified. A retained fixture records contradiction
 at 99.57% for a neutral pizza/bicycle pair; successful transport is not semantic
-correctness. Confidence is advisory and not assumed calibrated. Configured
-DeBERTa, real Colab compatibility, training and research performance remain untested.
-The optional notebook is disabled and has no execution outputs.
+correctness. Confidence is advisory and not assumed calibrated. The optional
+notebook is disabled and has no execution outputs. Colab compatibility and domain
+generalization remain unverified. Direct model and synthetic pilot execution
+statuses belong to each private run manifest, separately from notebook preparation
+and historical Space logs.
+
+## Optional bounded synthetic pilot
+
+Use a separate environment for `requirements-colab.txt`; its Transformers/Hub
+dependencies differ from the remote client extra. This deliberately executed
+command downloads pinned weights, runs direct smoke comparisons, fine-tunes an
+initial dependency head, and evaluates deterministic toy workflows:
+
+```sh
+python scripts/run_pilot.py --execute
+```
+
+Prefer a free Colab GPU using the disabled pilot section of the existing
+[`02_baseline_model.ipynb`](notebooks/02_baseline_model.ipynb). CPU is supported.
+The command creates a new ignored `_private/runs/pilot_<timestamp>_<id>/` with
+statuses, inputs, family-isolated splits, model outputs/checkpoints, measured
+metrics, CSVs, plots and a standalone `report.html`. Open that file directly;
+no server is required. Every report is marked **PRELIMINARY / EXPERIMENTAL
+— not final or production results.** Failed/unrun stages are explicit.
+
+Rebuild the viewer without inference using
+`python scripts/run_pilot.py --report-only --run <run-directory>` (with matplotlib
+installed). Validate saved artifacts offline using
+`python scripts/validate_pilot.py <run-directory>`; this blocks network connections.
+
+The bounded preset uses 96 synthetic source-sum pairs (64/16/16 rows, seed 42,
+12 template families), two training epochs, and 12 workflow cases repeated three
+times for each existing policy. Smoke cases never enter training. Model stages
+have a 30-minute limit and no automatic inference retry. Predictions remain
+advisory. See [data derivation](docs/DATA.md) and [model selection](docs/MODEL.md).
