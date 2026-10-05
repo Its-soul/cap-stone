@@ -85,7 +85,9 @@ def run_workflow_case(case: dict, baseline: str, config: dict, *, manual: bool =
     validate_case(case)
     if baseline not in BASELINES:
         raise ValueError("Unknown baseline")
+    complete_start = perf_counter()
     system, decisions = build_arithmetic_workflow(case, config["recovery"])
+    setup_seconds = perf_counter() - complete_start
     original_nodes = system.current_artifacts()
     initial_certificates = [node for node in original_nodes if node.kind == K.CERTIFICATE]
     change = case["change"]
@@ -126,6 +128,7 @@ def run_workflow_case(case: dict, baseline: str, config: dict, *, manual: bool =
         else:
             records.append({"decision_id": decision_id, "committed": False, "safe": None})
     elapsed = perf_counter() - start
+    complete_seconds = perf_counter() - complete_start
     committed = sum(row["committed"] for row in records)
     safe = sum(row["safe"] is True for row in records)
     expected_affected = {f"C{index}" for index in range(len(case["sources"]))
@@ -141,6 +144,11 @@ def run_workflow_case(case: dict, baseline: str, config: dict, *, manual: bool =
             "support_valid_commit_rate": ratio(safe, committed),
             "useful_completion_rate": ratio(safe, len(case["sources"])),
             "latency_seconds": elapsed, "configured_work_units": work_units,
+            "initial_setup_seconds": setup_seconds, "total_elapsed_seconds": complete_seconds,
+            "timing_scope": "local CPU wall time including change, policy, verification, commits; total includes fresh initial setup",
+            "blocked_tasks": len(case["sources"]) - committed,
+            "initial_artifacts": len(original_nodes), "final_artifacts": len(system.current_artifacts()),
+            "audit_events": len(system.audit_export()),
             "impact": asdict(report) if report else None, "recovery": asdict(outcome) if outcome else None,
             "planned_cost": costs, "decisions": records,
             "declared_impact_precision": ratio(len(actual_affected & expected_affected), len(actual_affected)) if report else None,
@@ -154,14 +162,14 @@ def run_workflow_case(case: dict, baseline: str, config: dict, *, manual: bool =
 
 
 def paired_cost_records(records: list[dict]) -> list[dict]:
-    grouped: dict[str, dict[str, dict]] = {}
+    grouped: dict[tuple[str, int | None], dict[str, dict]] = {}
     for record in records:
-        grouped.setdefault(record["world_id"], {})[record["baseline"]] = record
+        grouped.setdefault((record["world_id"], record.get("repetition")), {})[record["baseline"]] = record
     result = []
-    for world, methods in grouped.items():
+    for (world, repetition), methods in grouped.items():
         if "proposed" in methods and "A_full_recomputation" in methods:
             proposed, full = methods["proposed"], methods["A_full_recomputation"]
-            result.append({"world_id": world, "configured_work_savings": recovery_savings(
+            result.append({"world_id": world, "repetition": repetition, "configured_work_savings": recovery_savings(
                 proposed["configured_work_units"], full["configured_work_units"]),
                 "proposed_useful_completion": proposed["useful_completion_rate"],
                 "full_useful_completion": full["useful_completion_rate"],
