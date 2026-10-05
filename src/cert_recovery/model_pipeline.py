@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from .config import require_manual, resolve_path
 from .crypto import sha256
@@ -144,7 +143,7 @@ def run_finetuning(config: dict, *, manual: bool = False, resume_checkpoint: str
                  "model_id": model_id, "requested_revision": revision,
                  "resolved_revision": getattr(model.config, "_commit_hash", None),
                  "split_manifest_hash": sha256(manifest), "config_hash": sha256(config),
-                 "test_evaluation": "NOT RUN by training; use notebook 04 once selection is frozen"}
+                 "test_evaluation": "NOT RUN by training; call run_model_evaluation once selection is frozen"}
     write_json(target / "selection.json", selection)
     return selection
 
