@@ -30,6 +30,6 @@ def resolve_path(config: dict, name: str) -> Path:
 
 def require_manual(config: dict, flag: str, manual: bool) -> None:
     if manual is not True or config["execution"].get(flag) is not True:
-        raise RuntimeError("Prepared but intentionally not executed. Run manually in Google Colab. "
+        raise RuntimeError("Execution is disabled. Run manually in an authorized CPU/GPU environment. "
                            f"Enable {flag} and pass manual=True only for your chosen run.")
 

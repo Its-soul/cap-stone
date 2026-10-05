@@ -44,7 +44,7 @@ from cert_recovery.config import load_config
 from cert_recovery.pinned_smoke import run_pinned_smoke
 config = load_config(PROJECT_DIR / "config/config.yaml")
 '''),
-        markdown("Each comparison runs unchanged nli-003 only, premise first, "
+        markdown("Each comparison runs all six unchanged smoke pairs, including nli-003, premise first, "
                  "without a Space heuristic wrapper or research evaluation. Immutable "
                  "pins/configurations are in config/pinned_smoke_models.json. Fresh "
                  "results/pinned_smoke_*.prepared.json and a separate result capture "
@@ -55,7 +55,7 @@ config = load_config(PROJECT_DIR / "config/config.yaml")
         code('''RUN_DEBERTA_SMOKE = False
 if RUN_DEBERTA_SMOKE:
     config["execution"]["allow_model_inference"] = True
-    result = run_pinned_smoke(config, "deberta", manual=True)
+    result = run_pinned_smoke(config, "deberta", manual=True, all_cases=True)
     print(result["run_id"], result["predictions"])
 else:
     print("NOT RUN: pinned DeBERTa smoke")
@@ -63,10 +63,26 @@ else:
         code('''RUN_MINILM_SMOKE = False
 if RUN_MINILM_SMOKE:
     config["execution"]["allow_model_inference"] = True
-    result = run_pinned_smoke(config, "minilm_fallback", manual=True)
+    result = run_pinned_smoke(config, "minilm_fallback", manual=True, all_cases=True)
     print(result["run_id"], result["predictions"])
 else:
     print("NOT RUN: separate pinned MiniLM fallback comparison")
+'''), markdown("## Optional bounded synthetic pilot\n\n"
+        "**PRELIMINARY / EXPERIMENTAL — not final or production results.**\n\n"
+        "This runs the existing data/model/system pipelines: 96 source-sum pairs, "
+        "12 isolated template families, 64/16/16 train/validation/test rows, two "
+        "epochs on 64 training rows, immutable DeBERTa base weights, held-out "
+        "selection and separate six-pair direct NLI comparisons. It never trains "
+        "on the smoke pairs. Results, logs and checkpoints stay in a new ignored "
+        "_private/runs/ directory. Prefer a free Colab GPU; no paid job is launched. "
+        "Each model stage has a 30-minute timeout and is attempted once. Download "
+        "the entire result directory before Colab ends. Opening report.html requires "
+        "no server. The original eight private research notebooks remain unchanged."),
+        code('''RUN_SYNTHETIC_PILOT = False
+if RUN_SYNTHETIC_PILOT:
+    subprocess.check_call([sys.executable, str(PROJECT_DIR / "scripts/run_pilot.py"), "--execute"])
+else:
+    print("NOT RUN: optional bounded synthetic pilot")
 ''')]
     for index, cell in enumerate(cells):
         cell["id"] = hashlib.sha256(f"{FILENAME}:{index}".encode()).hexdigest()[:12]
