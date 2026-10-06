@@ -124,3 +124,43 @@ the historical Space's unverified local/fallback weights.
 The implementation follows the versioned [Transformers Trainer contract](https://huggingface.co/docs/transformers/v4.57.1/trainer).
 Generated private reports distinguish actual execution from preparation and say
 **PRELIMINARY / EXPERIMENTAL — not final or production results.**
+
+The controlled candidate workflow retains the same pinned pretrained starting
+model and replaces its three-class NLI head with a fresh seeded binary dependency
+head. It preserves the original trained checkpoint as a comparator. Checkpoint
+selection uses validation macro F1; threshold selection uses validation positive
+F1, recall and then the smallest candidate. Stress/final scores cannot select a model.
+New selections record the initial head digest, actual optimizer steps and every
+saved model/tokenizer file digest. Historical runs without those records retain
+their provenance limitations; post-hoc file checks do not attest past runtime loading.
+
+The NLI proxy has its own validation-selected threshold and remains a different
+objective. Constant and identifier diagnostics fit training only; coverage and the
+training-prior fallback are explicit. Constant fallback behavior for unseen aliases
+is not evidence that a model avoided source-name shortcuts. Saved classification
+and transformation metrics are computed separately, with exact input alignment.
+
+## Current annotation review and v3 proposal
+
+The [dependency contract](DEPENDENCY_TARGET.md) defines declared transitive support
+for a named target, rather than sensitivity or NLI. Saved-prediction review covers
+544 rows, including 16 scope-dependent `nli_context` mismatches, 49 stress regressions
+and all 42 stress improvements. Eight high-confidence validation errors are a
+subset of the 16. Missing exhaustive context prevents confirming 128 historical
+negative annotations. No causal memorization claim follows from these observations.
+
+V3 is preparation only: new grouped data and a frozen distribution intervention;
+the base, binary head/loss, budget and validation selection stay fixed. All flags
+remain false. The original pairs fit within 101/128 tokens, but negative transitive
+dependency judgments lacked an explicit source-root condition. A new version adds
+"All sources have no supports." to both strings. All 512 repaired pairs fit within
+113/128 tokens, retain decisive clauses and match frozen v2 token IDs.
+Mentor approval and manual authorization precede any job. No v3 inference, training or future-final predictions
+have run. Historical checkpoint and source hashes remain intact. Probabilities
+never establish certificate validity, and annotation proposals never modify edges.
+
+The disabled `run_candidate_v3.py` launcher reuses `run_finetuning`, blocks network,
+checks external review/authorization, binds one fresh attempt and freezes validation
+selection before comparing the new future-final set. It preserves the exact base,
+fresh binary head, loss, two-epoch budget and selection policy. The launch specification
+is proposed, not approved; none of these future model stages ran during preparation.
