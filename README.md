@@ -114,6 +114,20 @@ advisory. See [data derivation](docs/DATA.md) and [model selection](docs/MODEL.m
 
 ## Controlled candidate experiments
 
+### V2 automated tests
+
+Install `requirements-test.txt`, then run `pytest` from the repository root.
+The V2 tests exercise input cleaning, batching, frozen-threshold reporting,
+artifact tampering, stage ordering, CPU-only execution and preserved failure
+attempts. Model calls are mocked; no weights or downloads are needed.
+
+The private-checkpoint test is opt-in and only replays two validation examples.
+In the existing model environment, install `python -m pip install -e ".[test]"`
+(without the remote extra), set `CERT_RECOVERY_V2_RUN` to a completed V2 bundle,
+then run `pytest tests/integration/test_v2_checkpoint.py -q`.
+It reads existing artifacts without training, modifying results, or opening V3
+data. Without that environment variable, it reports a skip.
+
 Install `requirements-test.txt` in the core/client environment and run
 `python -m pytest tests -q` to include every suite, including evaluation regression
 tests. Network connections are blocked by the test fixture. Keep the separate
