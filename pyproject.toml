@@ -20,3 +20,9 @@ remote = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+markers = [
+    "v2_checkpoint: opt-in, read-only inference using a private V2 run bundle",
+]
