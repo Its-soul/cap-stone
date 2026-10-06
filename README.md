@@ -22,17 +22,19 @@ Run from the repository root. On Windows, use `py -3` in place of `python` if ne
 python -m venv .venv
 # Activate: Windows PowerShell .\.venv\Scripts\Activate.ps1
 # Activate: macOS/Linux source .venv/bin/activate
-python -m pip install -e ".[remote]"
-python -m unittest discover -s tests -q
-python -m unittest discover -s tests/remote -q
-python -m unittest discover -s tests/integration -q
+python -m pip install -r requirements-test.txt
+python -m pytest tests -q
 python scripts/validate_preparation.py
 ```
 
 `python -m pip install -e .` installs only the core. The remote extra is needed
 for the client and integration test suites; those tests block network connections.
-The current suites contain **56 core/preparation, 40 client, and 14 integration
-tests (110 unique tests)**. They establish behavior on fixtures, not model quality
+The current suites contain **226 unique tests**, including 56 existing core/preparation,
+40 client, 14 integration, 34 evaluation/controlled-candidate regression cases and
+46 dependency-contract/annotation-review/candidate-v3 preparation cases and
+36 tokenizer-retention/encoded-pair/human-review/launch-gate cases.
+Subtest assertions are reported separately and are not added to that count.
+They establish behavior on fixtures, not model quality
 or research performance. See [architecture and API](docs/ARCHITECTURE.md) for
 using the engine and its authority boundary.
 
@@ -109,3 +111,50 @@ The bounded preset uses 96 synthetic source-sum pairs (64/16/16 rows, seed 42,
 times for each existing policy. Smoke cases never enter training. Model stages
 have a 30-minute limit and no automatic inference retry. Predictions remain
 advisory. See [data derivation](docs/DATA.md) and [model selection](docs/MODEL.md).
+
+## Controlled candidate experiments
+
+Install `requirements-test.txt` in the core/client environment and run
+`python -m pytest tests -q` to include every suite, including evaluation regression
+tests. Network connections are blocked by the test fixture. Keep the separate
+`requirements-colab.txt` model environment; the remote client uses a different
+Hub version. Preparation remains disabled until explicitly authorized.
+
+Saved frozen evaluation can be audited without model loading using
+`scripts/audit_frozen_evaluation.py --output-dir <new-private-audit-directory>`.
+Use a new or empty audit directory; historical outputs remain intact. Validate
+the corrections with `scripts/validate_evaluation_artifacts.py <audit-directory>`.
+Explicit comparison IDs, member IDs, transformations and expected labels define
+paired metrics. Missing transformation metadata means paired metrics are unavailable.
+World cohorts are not individual renaming or role-change pairs.
+
+The optional controlled candidate workflow freezes provisional data, group assignments,
+input hashes, source snapshots and selection rules before execution. It reuses the
+binary training pipeline with a fresh head from the same pinned base. Checkpoint and
+threshold selection use validation only. Known stress failures inform development;
+the stress suite is a development benchmark. Final templates and one scenario are
+held out, with related variants kept together. Identifier diagnostics fit training
+only and report coverage and the unseen-alias fallback.
+
+`scripts/execute_candidate_v2.py --execute --run <preflight-approved-frozen-run>`
+runs one bounded training job and subsequent comparisons from cached weights with
+network blocked. Existing attempts cannot be retried or overwritten. Reports,
+loss plots, confusion matrices, predictions and failure records stay private.
+`scripts/validate_candidate_v2.py <completed-run>` checks those artifacts offline.
+Results remain **PRELIMINARY / EXPERIMENTAL** and confer no certificate authority.
+
+The current phase reviews saved predictions and freezes candidate-v3 data and a
+disabled experiment proposal. It makes no new model requests or training runs.
+See the [exact dependency target and annotation findings](docs/DEPENDENCY_TARGET.md)
+for scope ambiguities, controlled six-way contrasts, grouped 256/64/128 candidates,
+overlap audits and mentor/tokenization prerequisites. Historical stress and inspected
+final data are now development evidence; their bytes and results are preserved.
+
+The tokenizer audit found no truncation in the original proposal, but a closer
+contract audit found its negative labels relied on source-root status in metadata.
+A versioned replacement adds that condition explicitly to both input strings.
+Its 512 rows and 576 transformations fit within 113 of 128 tokens, with no decisive
+information loss and identical comparator token IDs. Model input construction is
+unchanged; this is an example-wording repair. Mentor approval and training authorization
+remain pending. The new launch command is disabled by default and rejects templates
+as approval; see [v3 prerequisites and launch controls](docs/DEPENDENCY_TARGET.md).
