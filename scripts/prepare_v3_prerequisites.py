@@ -18,8 +18,7 @@ def hardware():
               'logical_processors': os.cpu_count(), 'planned_device': 'CPU', 'gpu_execution_verified': False}
     if platform.system() == 'Windows':
         command = "$p=Get-CimInstance Win32_Processor; $m=Get-CimInstance Win32_ComputerSystem; [PSCustomObject]@{cpu=$p.Name;physical_cores=$p.NumberOfCores;memory_bytes=$m.TotalPhysicalMemory}|ConvertTo-Json -Compress"
-        done = subprocess.run(['powershell', '-NoProfile', '-Command', command], capture_output=True,
-                              text=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
+        done = subprocess.run(['powershell', '-NoProfile', '-Command', command], capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
         if done.returncode == 0: result.update(json.loads(done.stdout))
         else: result['hardware_query_status'] = 'UNAVAILABLE; no fabricated capacity'
     return result
