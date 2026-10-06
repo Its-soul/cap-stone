@@ -21,6 +21,6 @@ def test_execution_disabled_by_default(tmp_path, script):
     args = [sys.executable, str(path), '--run', str(tmp_path)]
     if script == 'run_candidate_v2.py':
         args += ['--stage', 'training']
-    result = subprocess.run(args, capture_output=True, text=True)
+    result = subprocess.run(args, capture_output=True, text=True, stdin=subprocess.DEVNULL)
     assert result.returncode != 0 and 'Disabled by default' in result.stderr
     assert list(tmp_path.iterdir()) == []

@@ -61,7 +61,7 @@ def test_overwrite_prevention(tmp_path):
 
     result = subprocess.run(
         [sys.executable, str(script_path), "--checkpoint-run", str(tmp_path), "--eval-dataset", str(tmp_path), "--output-dir", str(out_dir)],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, stdin=subprocess.DEVNULL
     )
     assert result.returncode != 0
     assert "Success result already exists" in result.stderr
@@ -73,7 +73,7 @@ def test_status_handling(tmp_path):
     # Provide bad paths to trigger failure
     result = subprocess.run(
         [sys.executable, str(script_path), "--checkpoint-run", str(tmp_path), "--eval-dataset", "missing.jsonl", "--output-dir", str(out_dir)],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, stdin=subprocess.DEVNULL
     )
     assert result.returncode != 0
     # Check that manifest was saved as FAILED
@@ -90,6 +90,6 @@ def test_failed_attempts_are_preserved(tmp_path, status):
     (out / "manifest.json").write_text(original)
     script = Path(__file__).resolve().parents[1] / "scripts/run_evaluation.py"
     result = subprocess.run([sys.executable, str(script), "--checkpoint-run", str(tmp_path),
-        "--eval-dataset", "missing.jsonl", "--output-dir", str(out)], capture_output=True, text=True)
+        "--eval-dataset", "missing.jsonl", "--output-dir", str(out)], capture_output=True, text=True, stdin=subprocess.DEVNULL)
     assert result.returncode != 0 and "Attempt directory already exists" in result.stderr
     assert (out / "manifest.json").read_text() == original
