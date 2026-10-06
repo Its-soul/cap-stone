@@ -204,6 +204,9 @@ def run_finetuning(config: dict, *, manual: bool = False, resume_checkpoint: str
         label2id={"independent": 0, "depends_on": 1}, ignore_mismatched_sizes=True, trust_remote_code=False,
         use_safetensors=True, output_loading_info=True)
     provenance = _loaded_provenance(config, model, tokenizer, loading, dependency_head=True)
+    provenance["fresh_head_initial_sha256"] = sha256({name: value.detach().cpu().tolist()
+        for name, value in model.named_parameters() if name in {"classifier.weight", "classifier.bias"}})
+    provenance["initialization_seed"] = hp["seed"]
     def tokenize(batch):
         return tokenizer(batch["premise"], batch["hypothesis"], truncation=True,
                          max_length=config["model"]["max_length"])
@@ -260,6 +263,8 @@ def run_finetuning(config: dict, *, manual: bool = False, resume_checkpoint: str
                  "threshold": threshold, "threshold_selection": "validation only, frozen before held-out evaluation",
                  "validation": _prediction_report(splits["validation"], validation, threshold, config["model"]["calibration_bins"]),
                  "training_metrics": train_output.metrics, "log_history": trainer.state.log_history,
+                 "actual_optimizer_steps": trainer.state.global_step,
+                 "checkpoint_file_hashes": {p.name: sha256_file(p) for p in (target / "best").iterdir() if p.is_file()},
                  "training_and_selection_seconds": perf_counter()-started,
                  "checkpoint_sha256": sha256_file(target / "best/model.safetensors"),
                  "test_evaluation": "NOT RUN by training; call run_model_evaluation once selection is frozen"}

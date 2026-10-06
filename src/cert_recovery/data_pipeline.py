@@ -88,11 +88,18 @@ def write_json(path: Path, value: dict) -> None:
     path.write_text(json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n", encoding="utf-8")
 
 
-def prepare_data(config: dict, *, manual: bool = False) -> dict:
+def prepare_data(config: dict, *, manual: bool = False, group_assignments: dict | None = None) -> dict:
     require_manual(config, "allow_data_preparation", manual)
     rows, cleaning = clean_rows(read_jsonl(resolve_path(config, "raw_pairs")), config["data"]["group_key"])
     fractions = tuple(config["data"][f"{name}_fraction"] for name in ("train", "validation", "test"))
-    splits = grouped_split(rows, fractions, config["data"]["seed"], config["data"]["group_key"])
+    if group_assignments is None:
+        splits = grouped_split(rows, fractions, config["data"]["seed"], config["data"]["group_key"])
+    else:
+        key = config["data"]["group_key"]
+        if set(group_assignments) != {row[key] for row in rows} or set(group_assignments.values()) != {"train", "validation", "test"}:
+            raise ValueError("Explicit split assignments must cover every group and all three splits")
+        splits = {name: [dict(row) for row in rows if group_assignments[row[key]] == name]
+                  for name in ("train", "validation", "test")}
     target = resolve_path(config, "processed")
     if any((target / f"{name}.jsonl").exists() for name in splits):
         raise FileExistsError("Split files already exist; preserve them or choose a new processed directory")
