@@ -113,3 +113,13 @@ attempts are retained, and paired comparisons keep repetitions distinct.
 Result bundles are ignored private artifacts. A static local HTML report embeds
 measured plots/tables and explicitly identifies missing stages. Ordinary imports,
 offline tests and default notebook/config flags perform no experiment.
+# Annotation preparation boundary
+
+The offline `dependency_contract` helper exposes the implemented declared-support
+target for data annotation. It operates on explicitly supplied graphs and uses the
+existing engine for synthetic intervention witnesses. Zero sensitivity does not
+remove an edge. `contrast_data` and `annotation_review` prepare provisional datasets
+and hash-bound review sidecars; they neither run models nor modify live workflow
+dependencies. Their exact target scope and distinction from NLI are documented in
+[DEPENDENCY_TARGET.md](DEPENDENCY_TARGET.md). Certificate lifecycle and deterministic
+verifier authority remain unchanged.

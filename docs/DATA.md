@@ -14,9 +14,11 @@ The guarded data helpers accept JSONL rows shaped like:
 {"pair_id":"p1","world_id":"world-1","premise":"Supplier A is eligible.","hypothesis":"The decision uses A's eligibility.","label":1,"source":"authored-example"}
 ```
 
-Binary dependency labels differ from NLI labels: `1` means required support in the
-stated task, `0` means independent. Entailment/similarity alone do not establish
-required support. `data/examples/` contains authored format examples only.
+Binary dependency labels differ from NLI labels: `1` means declared transitive
+support for the named target, `0` requires an exhaustive contract establishing
+absence. Unknown scope/support remains unannotated. Value sensitivity, entailment
+and similarity do not define this target. See the [dependency contract](DEPENDENCY_TARGET.md).
+`data/examples/` contains authored format examples only.
 
 Cleaning normalizes Unicode/whitespace and rejects conflicting or invalid rows.
 Grouped splits separate worlds and reject repeated pairs across splits. Split
@@ -50,3 +52,44 @@ are Q0/Q1, so D2 is never a required source. Disjoint families prevent exact tem
 world leakage but do not remove this structural naming shortcut. Record the audit
 with results; do not rewrite the frozen pilot or tune against its held-out examples.
 A new evaluation set should vary source aliases/roles and include reviewed context.
+
+## Controlled candidate data
+
+`controlled_data.generate_controlled()` authors 416 provisional examples with
+explicit closed dependency rules: sums, joint sign-off, joint token validation,
+literal NLI entailment with either dependency label, and a held-out weighted sum.
+Every label has a function-sensitivity witness run through the unchanged certificate
+engine. This is synthetic annotation, without human review or a claim of real-world
+causal necessity.
+
+The fixed protocol uses 256 train, 64 validation and 96 final-test rows. Eight
+training, four validation and six final template families have explicit assignments.
+Related four-row worlds contain two labels and their exact alias permutations;
+their renaming and role links stay within the split. Aliases and positive required-list
+positions are balanced. Validation and final each include both seen and unseen aliases.
+Four scenario rules are intentionally shared; wording templates are disjoint and
+the weighted-sum scenario occurs only in final testing.
+
+Leakage checks use Unicode/whitespace/case normalization and a structural projection
+that replaces aliases, world IDs and numeric values. They check template groups,
+worlds, linked variants and overlap with the unchanged development stress inputs.
+These checks detect specified leakage patterns; they do not establish domain
+independence or human annotation validity. Final hashes are frozen before training.
+
+Historical datasets lack transformation links. The separate correction artifact
+recovers authored role counterparts from exact IDs and validates proposed alias-only
+renamings against both texts, recording inferred provenance and exclusions. Role
+counterparts that also change facts are marked uncontrolled. Renaming consistency
+requires equal predictions and can hold when both predictions are wrong; role
+correctness requires both expected opposite labels. Reports include denominators,
+unique-row coverage, repeated members and overlap between the two test types.
+
+The paragraphs above describe frozen historical candidate-v2 data. Its negative
+`nli_context` inputs need explicit Q-only scope; whole-hypothesis certification is
+a different obligation. The observed 96-row final and unchanged 384-row stress
+suite are now historical/development benchmarks. V3 preparation keeps NLI and
+declared-support labels separate and includes zero-effect reads, redundant OR
+evidence and cancellation. Its six-category contrasts, 256/64/128 provisional
+candidates, ambiguity queue and immutable sidecars are described in the
+[target and preparation guide](DEPENDENCY_TARGET.md). No new model outputs were
+generated for those candidates.
