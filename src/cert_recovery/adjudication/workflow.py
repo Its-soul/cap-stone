@@ -5,6 +5,15 @@ from dataclasses import asdict
 from ..crypto import canonical_json
 from ..engine import CertificateSystem
 from ..models import ArtifactKind as K, VerificationResult
+from .composition import (
+    COMPOSITION_CONTRACT_VERSION,
+    PRECEDENCE_STRICT_AUDIT,
+    PRECEDENCE_SUBSTANTIVE_EXCLUSION,
+    SUPPORTED_PRECEDENCE,
+    assess_specialist,
+    compose_specialist_assessments,
+    verify_specialist_composition,
+)
 from .consensus import ConfidenceWeightedConsensus, Vote, assess, majority
 from .domain import FAULT_MODES, PROMPTS, ROLES, RULES, InsuranceClaim, RuleAgent, rule_decision, simulate_fault
 from .ledger import EventDAG
@@ -13,11 +22,26 @@ from .ledger import EventDAG
 class InsuranceAdjudication:
     """One claim per workflow; trusted local rules, untrusted agent adapters.
 
-    Role votes express local checks. The final safety gate prevents majority
-    approval from overriding any mandatory local rule. It is not a learned oracle.
+    Supports two modes:
+    - legacy: Role votes express local checks aggregated by weighted consensus and gated.
+    - composition: Specialist roles assess distinct obligations, composed via composition-v1 truth table.
     """
 
-    def __init__(self, claim: InsuranceClaim, *, backends=None, faults=None):
+    def __init__(
+        self,
+        claim: InsuranceClaim,
+        *,
+        backends=None,
+        faults=None,
+        mode: str = "legacy",
+        precedence: str = PRECEDENCE_SUBSTANTIVE_EXCLUSION,
+    ):
+        if mode not in ("legacy", "composition"):
+            raise ValueError(f"Unknown adjudication mode: {mode}")
+        if precedence not in SUPPORTED_PRECEDENCE:
+            raise ValueError(f"Unknown precedence mode: {precedence}")
+        self.mode = mode
+        self.precedence = precedence
         self.system = CertificateSystem()
         self.ledger = EventDAG()
         self.claim = claim
@@ -32,7 +56,12 @@ class InsuranceAdjudication:
         self.executions = {role: 0 for role in ROLES}
         self._source_events = {}
         self._recovery_event = None
-        self.system.register_verifier("insurance-round-v1", self._verify_round)
+
+        if self.mode == "composition":
+            self.system.register_verifier("specialist-composition-v1", self._verify_composition_round)
+        else:
+            self.system.register_verifier("insurance-round-v1", self._verify_round)
+
         for role in ROLES:
             ref = self.system.add_dependency("facts:" + role, {"claim_id": claim.claim_id, "facts": claim.facts(role),
                     "rule": RULES[role][0], "node_type": "source", "source": "synthetic-insurance-fixture"})
@@ -40,10 +69,19 @@ class InsuranceAdjudication:
             agent_id = role + "_agent"
             self.system.register_rebuilder(agent_id, lambda previous, supports, role=role: self._execute(role, supports[0]))
             self.system.add_artifact(agent_id, K.EVIDENCE, self._execute(role, self.system.artifact(ref)), (ref,), source=agent_id)
-        self.system.register_rebuilder("round", lambda previous, supports: self._round(supports))
+
         refs = tuple(self.system.latest(r + "_agent").ref for r in ROLES)
-        round_ref = self.system.add_artifact("round", K.CLAIM, self._round(tuple(self.system.artifact(r) for r in refs)), refs)
-        certificate = self.system.issue_certificate("round-certificate", round_ref, "insurance-round-v1")
+        if self.mode == "composition":
+            self.system.register_rebuilder("round", lambda previous, supports: self._composition_round(supports))
+            round_payload = self._composition_round(tuple(self.system.artifact(r) for r in refs))
+            round_ref = self.system.add_artifact("round", K.CLAIM, round_payload, refs)
+            certificate = self.system.issue_certificate("round-certificate", round_ref, "specialist-composition-v1")
+        else:
+            self.system.register_rebuilder("round", lambda previous, supports: self._round(supports))
+            round_payload = self._round(tuple(self.system.artifact(r) for r in refs))
+            round_ref = self.system.add_artifact("round", K.CLAIM, round_payload, refs)
+            certificate = self.system.issue_certificate("round-certificate", round_ref, "insurance-round-v1")
+
         self.system.register_rebuilder("final", self._rebuild_final)
         self.system.add_artifact("final", K.DECISION, self._final_payload(certificate), (certificate,))
 
@@ -71,11 +109,19 @@ class InsuranceAdjudication:
         assessment = assess(raw, role, facts, binding)
         validation = self.ledger.append("validation", asdict(assessment), (output_event, access), role + "_agent")
         fault = self.ledger.append("fault_assessment", asdict(assessment), (validation,), role + "_agent")
+        backend_id = raw.get("backend", "synthetic-rule-agent-v1") if isinstance(raw, dict) else "synthetic-rule-agent-v1"
+        spec_assessment = assess_specialist(raw, role, facts, binding, backend_id=backend_id)
+        if self.mode == "composition":
+            prov_ref = self.ledger.append("specialist_assessment", asdict(spec_assessment), (fault,), role + "_agent")
+            impact = "specialist obligation assessment"
+        else:
+            prov_ref = fault
+            impact = "validated weighted role vote"
         return {"agent_id": role + "_agent", "role": role, "raw_output": raw,
-                "assessment": asdict(assessment), "input_reference": binding,
-                "provenance_reference": fault, "node_type": "agent-assessment",
-                "rule_references": [RULES[role][0]], "evidence": facts,
-                "decision_impact": "validated weighted role vote"}
+                "assessment": asdict(assessment), "specialist_assessment": asdict(spec_assessment),
+                "input_reference": binding, "provenance_reference": prov_ref,
+                "node_type": "agent-assessment", "rule_references": [RULES[role][0]],
+                "evidence": facts, "decision_impact": impact}
 
     def _record_source(self, source):
         if source.content_hash not in self._source_events:
@@ -114,6 +160,40 @@ class InsuranceAdjudication:
         result["provenance_reference"] = self.ledger.append("consensus", result, parents)
         return result
 
+    def _compute_composition_round(self, agents):
+        spec_assessments = {}
+        for node in agents:
+            source = self.system.artifact(node.supports[0])
+            facts = source.payload["facts"]
+            binding = self._binding(source)
+            raw = node.payload["raw_output"]
+            backend_id = raw.get("backend", "synthetic-rule-agent-v1") if isinstance(raw, dict) else "synthetic-rule-agent-v1"
+            spec = assess_specialist(raw, node.payload["role"], facts, binding, backend_id=backend_id)
+            spec_assessments[node.payload["role"]] = spec
+        comp = compose_specialist_assessments(spec_assessments, precedence=self.precedence)
+        return {
+            "contract_version": COMPOSITION_CONTRACT_VERSION,
+            "mode": "specialist-composition",
+            "precedence": self.precedence,
+            "decision": comp.decision,
+            "gate": comp.gate,
+            "specialist_assessments": comp.specialist_assessments,
+            "advisory_consensus": comp.advisory_consensus,
+            "procedural_exceptions": list(comp.procedural_exceptions),
+            "node_type": "specialist-composition",
+            "rule_references": list(comp.rule_references),
+        }
+
+    def _composition_round(self, agents):
+        result = self._compute_composition_round(agents)
+        parents = [node.payload["provenance_reference"] for node in agents]
+        result["provenance_reference"] = self.ledger.append("specialist_composition", result, parents)
+        return result
+
+    def _verify_composition_round(self, subject, ancestry):
+        agents = tuple(self.system.artifact(ref) for ref in subject.supports)
+        return verify_specialist_composition(subject.payload, agents, self.ledger, precedence=self.precedence)
+
     def _verify_round(self, subject, ancestry):
         try:
             agents = tuple(self.system.artifact(ref) for ref in subject.supports)
@@ -151,8 +231,21 @@ class InsuranceAdjudication:
     def _final_payload(self, certificate):
         cert = self.system.certificate(certificate)
         result = self.system.artifact(cert.subject).payload
-        payload = {"decision": result["decision"], "consensus": result["consensus"], "gate": result["gate"],
-                   "certificate": self._binding(self.system.artifact(certificate)), "node_type": "final-decision"}
+        if self.mode == "composition":
+            payload = {
+                "decision": result["decision"],
+                "gate": result["gate"],
+                "contract_version": result["contract_version"],
+                "mode": "specialist-composition",
+                "precedence": result["precedence"],
+                "advisory_consensus": result["advisory_consensus"],
+                "procedural_exceptions": result["procedural_exceptions"],
+                "certificate": self._binding(self.system.artifact(certificate)),
+                "node_type": "final-decision",
+            }
+        else:
+            payload = {"decision": result["decision"], "consensus": result["consensus"], "gate": result["gate"],
+                       "certificate": self._binding(self.system.artifact(certificate)), "node_type": "final-decision"}
         payload["provenance_reference"] = self.ledger.append("final_decision", payload, (result["provenance_reference"],))
         return payload
 
@@ -203,3 +296,28 @@ class InsuranceAdjudication:
                                       for n in self.system.provenance(self.system.latest("final").ref)],
                 "events": self.ledger.export(), "dag_checkpoint": self.ledger.checkpoint(),
                 "audit_chain": self.system.audit_export(), "audit_checkpoint": asdict(self.system.checkpoint())}
+
+
+class SpecialistCompositionAdjudication(InsuranceAdjudication):
+    """Specialist-role composition adjudication prototype (composition-v1).
+
+    Composes distinct mandatory obligations according to the frozen truth table.
+    Eliminates role-fusion whole-claim voting while preserving existing specialist roles,
+    fault tolerance, cryptographic verification, and selective recovery.
+    """
+
+    def __init__(
+        self,
+        claim: InsuranceClaim,
+        *,
+        backends=None,
+        faults=None,
+        precedence: str = PRECEDENCE_SUBSTANTIVE_EXCLUSION,
+    ):
+        super().__init__(
+            claim,
+            backends=backends,
+            faults=faults,
+            mode="composition",
+            precedence=precedence,
+        )
