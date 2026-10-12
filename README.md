@@ -139,15 +139,24 @@ needed for model workflows; see [model setup](docs/MODEL.md).
 
 ## Tests
 
-The [recorded milestone validation](docs/RESEARCH_PROTOTYPE.md#validation-record)
-reports **319 passed, 1 skipped and 75 subtests passed**, including 48 insurance
-tests. These are the previous implementation run's results; tests were not rerun
-for this README edit.
+The [recorded milestone validation](docs/RESEARCH_PROTOTYPE.md#validation-record-and-reproducible-checkpoint)
+reports **352 passed, 1 skipped and 75 subtests passed**, including 48 insurance
+tests, 8 ablation tests, 9 provenance/recovery tests, 9 model agent tests, and 7 harness validation tests.
 
 ```sh
 python -m pytest tests -q
 python -m pytest tests/test_insurance_adjudication.py -q
+python -m pytest tests/test_ablation_study.py -q
+python -m pytest tests/test_provenance_recovery_integrity.py -q
+python -m pytest tests/test_model_agent.py -q
+python -m pytest tests/test_harness_repaired_validation.py -q
 python scripts/validate_preparation.py
+```
+
+Run the 8-arm factorial offline ablation study:
+
+```sh
+python scripts/run_insurance_ablation.py --suite extended --seeds 42 101 2024 --output results/ablation/my_ablation.json
 ```
 
 Most V2 tests use mocks, without model weights. The optional private-checkpoint
