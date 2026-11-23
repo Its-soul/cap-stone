@@ -1,0 +1,86 @@
+# Centralized Research Configuration
+# Project: Verifiable Multi-Agent Fault-Tolerant Adjudication System with Cryptographic Causal Provenance
+project_name: "capstone_verifiable_adjudication_benchmark"
+random_seed: 42
+seeds: [42, 101, 2024]
+
+hardware_budgets:
+  laptop_cpu:
+    max_memory_mb: 3500.0
+    torch_threads: 4
+    interop_threads: 2
+    device: "cpu"
+    timeout_minutes: 20
+  nvidia_lab:
+    tier1_device: "cuda:0"
+    mixed_precision: "bf16"
+    flash_attention: true
+    max_gpu_vram_gb: 24.0
+
+directories:
+  data_dir: "data"
+  results_dir: "results"
+  checkpoints_dir: "results/checkpoints"
+  figures_dir: "results/figures"
+  experiments_dir: "results/experiments"
+
+groups:
+  group_1_nli:
+    task: "semantic_reasoning_and_nli"
+    labels: ["entailment", "neutral", "contradiction"]
+    num_labels: 3
+    laptop:
+      batch_size: 4
+      seq_len: 256
+      lr: 2.0e-5
+    nvidia:
+      batch_size: 16
+      seq_len: 512
+      lr: 2.0e-5
+      epochs: 8
+
+  group_2_dependency:
+    task: "computational_dependency_prediction"
+    labels: ["independent", "depends_on"]
+    num_labels: 2
+    calibrated_threshold: 0.20
+    laptop:
+      batch_size: 2
+      seq_len: 128
+      lr: 2.0e-5
+    nvidia:
+      batch_size: 16
+      seq_len: 256
+      lr: 2.0e-5
+      epochs: 10
+
+  group_3_evidence_fault:
+    task: "evidence_verification_and_fault_detection"
+    labels: ["SUPPORTED", "UNSUPPORTED", "CONTRADICTORY"]
+    num_labels: 3
+    laptop:
+      batch_size: 2
+      seq_len: 256
+      lr: 1.5e-5
+    nvidia:
+      batch_size: 16
+      seq_len: 512
+      lr: 1.5e-5
+      epochs: 8
+
+  group_4_generative_specialist:
+    task: "structured_specialist_adjudication_proposal"
+    roles: ["coverage", "documents", "risk", "compliance"]
+    laptop:
+      mode: "lora_cpu_or_onnx"
+      batch_size: 1
+      grad_accum: 4
+      max_seq_len: 384
+      lora_rank: 8
+    nvidia:
+      mode: "lora_bf16"
+      batch_size: 8
+      grad_accum: 2
+      max_seq_len: 1024
+      lora_rank: 16
+      epochs: 5
