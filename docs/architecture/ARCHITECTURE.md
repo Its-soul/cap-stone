@@ -121,5 +121,5 @@ existing engine for synthetic intervention witnesses. Zero sensitivity does not
 remove an edge. `contrast_data` and `annotation_review` prepare provisional datasets
 and hash-bound review sidecars; they neither run models nor modify live workflow
 dependencies. Their exact target scope and distinction from NLI are documented in
-[DEPENDENCY_TARGET.md](DEPENDENCY_TARGET.md). Certificate lifecycle and deterministic
+[DEPENDENCY_TARGET.md](../research_methodology/DEPENDENCY_TARGET.md). Certificate lifecycle and deterministic
 verifier authority remain unchanged.
