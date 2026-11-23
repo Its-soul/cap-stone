@@ -135,21 +135,21 @@ python run_baseline.py --help
 ```
 
 The help command submits nothing. PyTorch/Transformers are optional and only
-needed for model workflows; see [model setup](docs/MODEL.md).
+needed for model workflows; see [model setup](docs/architecture/MODEL.md).
 
 ## Tests
 
-The [recorded milestone validation](docs/RESEARCH_PROTOTYPE.md#validation-record-and-reproducible-checkpoint)
+The [recorded milestone validation](docs/academic_defense/RESEARCH_PROTOTYPE.md#validation-record-and-reproducible-checkpoint)
 reports **352 passed, 1 skipped and 75 subtests passed**, including 48 insurance
 tests, 8 ablation tests, 9 provenance/recovery tests, 9 model agent tests, and 7 harness validation tests.
 
 ```sh
 python -m pytest tests -q
-python -m pytest tests/test_insurance_adjudication.py -q
-python -m pytest tests/test_ablation_study.py -q
-python -m pytest tests/test_provenance_recovery_integrity.py -q
-python -m pytest tests/test_model_agent.py -q
-python -m pytest tests/test_harness_repaired_validation.py -q
+python -m pytest tests/adjudication/test_insurance_adjudication.py -q
+python -m pytest tests/adjudication/test_ablation_study.py -q
+python -m pytest tests/adjudication/test_provenance_recovery_integrity.py -q
+python -m pytest tests/adjudication/test_model_agent.py -q
+python -m pytest tests/adjudication/test_harness_repaired_validation.py -q
 python scripts/validate_preparation.py
 ```
 
@@ -181,11 +181,31 @@ Next steps are stronger independent models, confidence checked against actual
 accuracy, more realistic adversarial tests, stronger fault-tolerance evaluation,
 authenticated decision histories and larger experiments.
 
-The [original project description](docs/PROJECT_PROPOSAL.md) is preserved separately.
-For further detail:
+The [original project description](docs/academic_defense/PROJECT_PROPOSAL.md) is preserved separately.
 
-- [Prototype scope, limitations and measured results](docs/RESEARCH_PROTOTYPE.md)
-- [Architecture and API](docs/ARCHITECTURE.md)
-- [Data formats](docs/DATA.md)
-- [Model setup and advice](docs/MODEL.md)
-- [What counts as a dependency](docs/DEPENDENCY_TARGET.md)
+## Documentation Index
+
+### System Architecture & Data Contracts
+- [Architecture and API](docs/architecture/ARCHITECTURE.md)
+- [Specialist Composition Contract](docs/architecture/COMPOSITION_CONTRACT.md)
+- [Data Formats & Schemas](docs/architecture/DATA.md)
+- [Model Setup & Advisory Clients](docs/architecture/MODEL.md)
+
+### Research Methodology & Model Audits
+- [Custom Model Research Contribution (Stages A–F)](docs/research_methodology/Custom_Model_Contribution.md)
+- [What Counts as a Dependency (Support Closure)](docs/research_methodology/DEPENDENCY_TARGET.md)
+- [Research Model Selection Report (12-Model Framework)](docs/research_methodology/Research_Model_Selection_Report.md)
+- [Existing Models Audit Report](docs/research_methodology/existing_models_audit.md)
+- [Dataset and Model Compatibility Analysis](docs/research_methodology/dataset_model_compatibility.md)
+
+### Experimental Plans & Feasibility Roadmaps
+- [Specialist-Role Composition Evaluation Plan](docs/experimental_plans/EVALUATION_PLAN.md)
+- [12-Model Experimental Design (RQ1–RQ4)](docs/experimental_plans/experimental_design.md)
+- [Laptop One-Epoch Feasibility Report](docs/experimental_plans/One_Epoch_Feasibility_Report.md)
+- [NVIDIA Laboratory Extensive Training Roadmap](docs/experimental_plans/NVIDIA_Extensive_Training_Report.md)
+
+### Academic Defense & Milestones
+- [Teacher Viva & Oral Defense Guide](docs/academic_defense/Teacher_Viva_Explanation.md)
+- [Mentor Presentation Summary](docs/academic_defense/mentor_model_selection_summary.md)
+- [Insurance Prototype Milestone Report](docs/academic_defense/RESEARCH_PROTOTYPE.md)
+- [Research Benchmark Execution Guide](docs/academic_defense/README_RESEARCH_BENCHMARK.md)

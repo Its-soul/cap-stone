@@ -25,4 +25,10 @@ testpaths = ["tests"]
 pythonpath = ["src", "."]
 markers = [
     "v2_checkpoint: opt-in, read-only inference using a private V2 run bundle",
+    "core: Deterministic foundation, DAG operations, cryptographic hashing, and certificate recovery",
+    "adjudication: Multi-agent insurance adjudication, consensus, specialist composition, and ablation",
+    "ml: Machine learning dependency prediction pipelines, data preparation, and empirical evaluation",
+    "slow: Tests with long execution duration or combinatorial generation",
+    "integration: Cross-system integration and model checkpoint replay tests",
+    "remote: Remote client and offline workflow replay tests",
 ]
