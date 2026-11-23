@@ -37,8 +37,8 @@ def main():
         raise
     sources=['src/cert_recovery/dependency_contract.py','src/cert_recovery/contrast_data.py',
              'src/cert_recovery/annotation_review.py','scripts/prepare_candidate_v3.py',
-             'scripts/validate_annotation_review.py','tests/test_dependency_contract.py',
-             'tests/test_contrast_data.py','tests/test_annotation_review.py']
+             'scripts/validate_annotation_review.py','tests/core/test_dependency_contract.py',
+             'tests/ml_pipeline/test_contrast_data.py','tests/ml_pipeline/test_annotation_review.py']
     write_exclusive(out/'phase_manifest.json',{'status':'FROZEN_PREPARATION_ONLY_NO_MODEL_EXECUTION',
         'prepared_artifact_hashes':{str(p.relative_to(out)):sha256_file(p) for p in out.rglob('*') if p.is_file()},
         'preparation_source_hashes':{p:sha256_file(ROOT/p) for p in sources}})

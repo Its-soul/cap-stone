@@ -48,7 +48,7 @@ def main():
         launch = prepare_bundle(ROOT, review, out, hardware())
         sources = ['src/cert_recovery/v3_preparation.py', 'src/cert_recovery/v3_launch.py',
             'scripts/prepare_v3_prerequisites.py', 'scripts/run_candidate_v3.py', 'scripts/validate_v3_prerequisites.py',
-            'tests/test_v3_preparation.py', 'tests/test_v3_launch.py',
+            'tests/ml_pipeline/test_v3_preparation.py', 'tests/ml_pipeline/test_v3_launch.py',
             'src/cert_recovery/model_pipeline.py', 'src/cert_recovery/data_pipeline.py']
         source_digests = {}
         for filename in sources:
