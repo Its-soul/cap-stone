@@ -15,6 +15,8 @@ from remote_model_client import (
     ResponseValidationError, normalize_output, redact,
 )
 from run_baseline import ROOT, create_run_file, load_dataset, run, save_current_run
+import pytest
+pytestmark = pytest.mark.remote
 
 
 def html_result(label="Consistent", confidence="98.75%", overlap=None, similarity=None):

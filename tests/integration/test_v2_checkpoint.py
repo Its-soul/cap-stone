@@ -9,6 +9,7 @@ from cert_recovery.controlled_study import verify_frozen
 from cert_recovery.data_pipeline import load_verified_splits
 from cert_recovery.model_pipeline import _infer, _prediction_report
 from cert_recovery.pinned_smoke import sha256_file
+pytestmark = pytest.mark.integration
 
 
 @pytest.mark.v2_checkpoint
