@@ -7,6 +7,8 @@ import unittest
 from unittest.mock import Mock, patch
 
 from remote_model_client import RemoteModelClient, normalize_output
+import pytest
+pytestmark = pytest.mark.remote
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = Path(__file__).parent / "fixtures/case_003_recorded_response.json"

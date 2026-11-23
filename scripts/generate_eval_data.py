@@ -126,12 +126,14 @@ def main():
     pairs = generate_track_a(16) + generate_track_b(16)
     
     # We create a new run directory for this evaluation phase
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[1]
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
     run_id = f"eval_{timestamp}_11111111"
-    run_dir = os.path.join(r"D:\Code\Github\certificate-recovery\_private\runs", run_id)
+    run_dir = repo_root / "_private" / "runs" / run_id
     os.makedirs(run_dir, exist_ok=True)
     
-    out_path = os.path.join(run_dir, "dependency_pairs.jsonl")
+    out_path = run_dir / "dependency_pairs.jsonl"
     with open(out_path, 'w', encoding='utf-8') as f:
         for p in pairs:
             f.write(json.dumps(p) + '\n')
