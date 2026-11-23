@@ -19,6 +19,8 @@ from cert_recovery import ArtifactKind as K, CertificateStatus as S, Certificate
 from cert_recovery.provenance import AuditJournal
 from remote_model_client import RemoteModelClient
 from semantic_advice import SemanticAdviceAdapter
+import pytest
+pytestmark = pytest.mark.integration
 
 
 def fixture_response(prepared, raw=None, error=None):
