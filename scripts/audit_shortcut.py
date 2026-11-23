@@ -22,4 +22,8 @@ def audit_shortcut(jsonl_path):
         print(f"Source {source}: {stats['pos']} positive / {stats['total']} total ({stats['pos']/stats['total']:.2%} positive)")
 
 if __name__ == '__main__':
-    audit_shortcut(r'D:\Code\Github\certificate-recovery\_private\runs\pilot_20261005T095053_580194Z_02f39b02\dependency_pairs.jsonl')
+    import sys
+    from pathlib import Path
+    default_path = Path(__file__).resolve().parents[1] / "_private" / "runs" / "pilot_20261005T095053_580194Z_02f39b02" / "dependency_pairs.jsonl"
+    target_path = Path(sys.argv[1]) if len(sys.argv) > 1 else default_path
+    audit_shortcut(target_path)

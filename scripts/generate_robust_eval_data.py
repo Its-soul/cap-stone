@@ -137,16 +137,18 @@ def main():
     print("Identifier distribution by label (should be perfectly balanced):", stats)
     
     # Check overlap
-    pilot_path = r"D:\Code\Github\certificate-recovery\_private\runs\pilot_20261005T095053_580194Z_02f39b02\dependency_pairs.jsonl"
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[1]
+    pilot_path = repo_root / "_private" / "runs" / "pilot_20261005T095053_580194Z_02f39b02" / "dependency_pairs.jsonl"
     ex, norm = check_overlap(pairs, pilot_path)
     print(f"Overlap with old training: Exact={ex}, Normalized={norm}")
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
     run_id = f"eval_robust_{timestamp}"
-    run_dir = os.path.join(r"D:\Code\Github\certificate-recovery\_private\runs", run_id)
+    run_dir = repo_root / "_private" / "runs" / run_id
     os.makedirs(run_dir, exist_ok=True)
     
-    out_path = os.path.join(run_dir, "dependency_pairs.jsonl")
+    out_path = run_dir / "dependency_pairs.jsonl"
     with open(out_path, 'w', encoding='utf-8') as f:
         for p in pairs:
             f.write(json.dumps(p) + '\n')
