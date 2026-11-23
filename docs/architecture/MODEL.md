@@ -142,7 +142,7 @@ and transformation metrics are computed separately, with exact input alignment.
 
 ## Current annotation review and v3 proposal
 
-The [dependency contract](DEPENDENCY_TARGET.md) defines declared transitive support
+The [dependency contract](../research_methodology/DEPENDENCY_TARGET.md) defines declared transitive support
 for a named target, rather than sensitivity or NLI. Saved-prediction review covers
 544 rows, including 16 scope-dependent `nli_context` mismatches, 49 stress regressions
 and all 42 stress improvements. Eight high-confidence validation errors are a

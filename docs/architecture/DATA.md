@@ -17,7 +17,7 @@ The guarded data helpers accept JSONL rows shaped like:
 Binary dependency labels differ from NLI labels: `1` means declared transitive
 support for the named target, `0` requires an exhaustive contract establishing
 absence. Unknown scope/support remains unannotated. Value sensitivity, entailment
-and similarity do not define this target. See the [dependency contract](DEPENDENCY_TARGET.md).
+and similarity do not define this target. See the [dependency contract](../research_methodology/DEPENDENCY_TARGET.md).
 `data/examples/` contains authored format examples only.
 
 Cleaning normalizes Unicode/whitespace and rejects conflicting or invalid rows.
@@ -91,5 +91,5 @@ suite are now historical/development benchmarks. V3 preparation keeps NLI and
 declared-support labels separate and includes zero-effect reads, redundant OR
 evidence and cancellation. Its six-category contrasts, 256/64/128 provisional
 candidates, ambiguity queue and immutable sidecars are described in the
-[target and preparation guide](DEPENDENCY_TARGET.md). No new model outputs were
+[target and preparation guide](../research_methodology/DEPENDENCY_TARGET.md). No new model outputs were
 generated for those candidates.
