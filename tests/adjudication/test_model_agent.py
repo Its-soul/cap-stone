@@ -17,6 +17,7 @@ from cert_recovery.adjudication.model_evaluation import (
     save_model_evaluation,
 )
 from cert_recovery.adjudication.workflow import InsuranceAdjudication
+pytestmark = pytest.mark.adjudication
 
 
 def test_build_compliance_prompt_structure():

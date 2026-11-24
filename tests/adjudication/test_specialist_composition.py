@@ -16,6 +16,7 @@ from cert_recovery.adjudication.composition import (
 )
 from cert_recovery.adjudication.domain import InsuranceClaim, ROLES, RULES
 from cert_recovery.adjudication.workflow import InsuranceAdjudication, SpecialistCompositionAdjudication
+pytestmark = pytest.mark.adjudication
 
 
 def test_clean_approval_all_obligations_satisfied():
@@ -290,3 +291,28 @@ def test_export_payload_consistency():
     assert len(exported["events"]) > 0
     assert exported["round"]["contract_version"] == COMPOSITION_CONTRACT_VERSION
     assert workflow.ledger.verify(exported["events"], exported["dag_checkpoint"])
+
+
+def test_composition_evaluation_bounded_study():
+    """Verify composition_evaluation engine executes offline comparison across methods."""
+    from cert_recovery.adjudication.composition_evaluation import (
+        run_composition_study,
+        mixed_scenarios,
+        COMPOSITION_METHOD_REGISTRY,
+    )
+
+    scenarios = mixed_scenarios()
+    assert len(scenarios) == 6
+    assert all("case_id" in s and "claim" in s and "label" in s for s in scenarios)
+
+    study = run_composition_study(cases_set="mixed", rates=(0.0,), seeds=(42,))
+    assert study["evaluation_version"] == "composition-eval-v1"
+    assert study["annotation_status"] == "SYNTHETIC_PROVISIONAL"
+    assert study["total_trials"] == 6
+    assert set(study["overall_by_method"].keys()) == set(COMPOSITION_METHOD_REGISTRY.keys())
+
+    # Oracle Method F matches labels on clean baseline
+    f_metrics = study["overall_by_method"]["F"]
+    assert f_metrics["total_cases"] == 6
+    assert f_metrics["reported_correct"] == 6
+    assert f_metrics["reported_accuracy"] == 1.0
