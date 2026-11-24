@@ -2,10 +2,7 @@ import copy
 import pytest
 from cert_recovery.contrast_data import (generate_collection,generate_v3_candidates,audit_candidates,
     validate_transformations,transformation_metrics,render,nli_label)
-
-
-@pytest.fixture(scope='module')
-def collection(): return generate_collection()
+pytestmark = pytest.mark.ml
 
 
 def test_all_six_categories_and_provisional_review(collection):

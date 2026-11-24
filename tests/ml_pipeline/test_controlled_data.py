@@ -3,6 +3,7 @@ import pytest
 from cert_recovery.controlled_data import generate_controlled, leakage_audit
 from cert_recovery.evidence_audit import fit_baselines, baseline_predictions
 from cert_recovery.data_pipeline import prepare_data, write_json
+pytestmark = pytest.mark.ml
 
 
 @pytest.fixture(scope='module')
