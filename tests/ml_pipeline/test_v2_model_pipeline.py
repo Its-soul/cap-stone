@@ -10,6 +10,7 @@ import pytest
 
 from cert_recovery.data_pipeline import clean_rows, normalize_text
 from cert_recovery.model_pipeline import _infer, _prediction_report, select_threshold
+pytestmark = pytest.mark.ml
 
 
 @pytest.fixture

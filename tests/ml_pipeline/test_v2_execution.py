@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -10,13 +11,21 @@ from unittest.mock import Mock
 import pytest
 
 from cert_recovery.config import load_config
-from cert_recovery.controlled_study import execute_stage, verify_frozen
+from cert_recovery.controlled_study import execute_stage, freeze, verify_frozen
 from cert_recovery.crypto import sha256
 from cert_recovery.data_pipeline import prepare_data, write_json
 from cert_recovery.pinned_smoke import sha256_file
 import cert_recovery.controlled_study as study
+pytestmark = pytest.mark.ml
 
-ROOT = Path(__file__).resolve().parents[1]
+def _find_repo_root() -> Path:
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        if (parent / "pyproject.toml").exists():
+            return parent
+    return current.parents[1]
+
+ROOT = _find_repo_root()
 
 
 @pytest.fixture
@@ -185,3 +194,23 @@ def test_v2_cpu_only_guard_records_failure_without_training(frozen_run, stage_ba
     assert state["status"] == "ERROR"
     assert read(Path(state["attempt"]) / "status.json") == state
     stage_backend[1]["run_finetuning"].assert_not_called()
+
+
+def test_protocol_requires_successful_checks(tmp_path):
+    audit = tmp_path / "audit"
+    audit.mkdir()
+    (audit / "audit.json").write_text(json.dumps({"status": "VERIFIED_OFFLINE"}))
+    with pytest.raises(ValueError, match="all offline checks"):
+        freeze(tmp_path, audit, {"status": "FAILED"})
+    assert not (tmp_path / "_private").exists()
+
+
+@pytest.mark.parametrize("script", ["run_candidate_v2.py", "execute_candidate_v2.py"])
+def test_execution_disabled_by_default(tmp_path, script):
+    path = ROOT / "scripts" / script
+    args = [sys.executable, str(path), "--run", str(tmp_path)]
+    if script == "run_candidate_v2.py":
+        args += ["--stage", "training"]
+    result = subprocess.run(args, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+    assert result.returncode != 0 and "Disabled by default" in result.stderr
+    assert list(tmp_path.iterdir()) == []
