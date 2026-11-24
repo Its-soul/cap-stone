@@ -11,6 +11,7 @@ from cert_recovery.contrast_data import generate_v3_candidates
 from cert_recovery.pinned_smoke import sha256_file
 from cert_recovery.v3_launch import (validate_external_reviews, validate_authorization, initialize_attempt,
                                     future_metrics, acceptance, run_worker)
+pytestmark = pytest.mark.ml
 
 
 @pytest.fixture
@@ -69,7 +70,7 @@ def test_execution_needs_every_permission_and_exact_launch_binding(tmp_path, fie
 
 
 def test_launcher_disabled_before_imports_or_output_creation(tmp_path):
-    script = Path(__file__).resolve().parents[1]/'scripts/run_candidate_v3.py'
+    script = Path(__file__).resolve().parents[2]/'scripts/run_candidate_v3.py'
     result = subprocess.run([sys.executable, str(script), '--bundle', str(tmp_path),
                              '--attempt-dir', str(tmp_path/'attempt')], capture_output=True, text=True, stdin=subprocess.DEVNULL)
     assert result.returncode != 0 and 'Disabled by default' in result.stderr

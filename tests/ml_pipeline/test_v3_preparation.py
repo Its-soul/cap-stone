@@ -9,6 +9,7 @@ from cert_recovery.contrast_data import generate_collection
 from cert_recovery.v3_preparation import (model_input, audit_row, audit_collection, audit_transformations,
     span_retained, explicit_roots, original_row, ROOT_CLAUSE)
 from cert_recovery.dependency_contract import dependency_label
+pytestmark = pytest.mark.ml
 
 
 class Encoding(dict):
@@ -34,8 +35,8 @@ class FixtureTokenizer:
 
 
 @pytest.fixture(scope='module')
-def collection():
-    rows,links=generate_collection()
+def collection(collection):
+    rows,links=collection
     return [explicit_roots(r) for r in rows],links
 
 
