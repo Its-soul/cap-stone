@@ -2,6 +2,7 @@ import pytest
 from cert_recovery.dependency_contract import dependency_label, contract_witness
 from cert_recovery.engine import CertificateSystem
 from cert_recovery.models import ArtifactKind as K, VerificationResult
+pytestmark = pytest.mark.core
 
 
 def test_transitive_declared_ancestry_not_minimal_causality():

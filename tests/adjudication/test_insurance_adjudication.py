@@ -12,6 +12,7 @@ from cert_recovery.adjudication.workflow import InsuranceAdjudication
 from cert_recovery.crypto import sha256
 from cert_recovery.models import CertificateStatus
 from cert_recovery.provenance import AuditJournal
+pytestmark = pytest.mark.adjudication
 
 
 def test_four_distinct_roles_and_structured_outputs():
