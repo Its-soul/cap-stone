@@ -1,6 +1,7 @@
 import copy
 import pytest
 from cert_recovery.paired_metrics import paired_metrics
+pytestmark = pytest.mark.ml
 
 
 def fixture():

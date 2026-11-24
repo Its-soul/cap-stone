@@ -9,6 +9,7 @@ import sys
 
 from cert_recovery.model_pipeline import _prediction_report
 from cert_recovery.crypto import sha256
+pytestmark = pytest.mark.ml
 
 def test_duplicates_and_counterbalancing():
     # Verify our robust eval generator doesn't have duplicates and is counterbalanced
@@ -57,7 +58,7 @@ def test_overwrite_prevention(tmp_path):
     manifest = {"execution_status": "SUCCESS"}
     (out_dir / "manifest.json").write_text(json.dumps(manifest))
 
-    script_path = Path(__file__).resolve().parents[1] / "scripts" / "run_evaluation.py"
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_evaluation.py"
 
     result = subprocess.run(
         [sys.executable, str(script_path), "--checkpoint-run", str(tmp_path), "--eval-dataset", str(tmp_path), "--output-dir", str(out_dir)],
@@ -69,7 +70,7 @@ def test_overwrite_prevention(tmp_path):
 def test_status_handling(tmp_path):
     out_dir = tmp_path / "eval_test2"
 
-    script_path = Path(__file__).resolve().parents[1] / "scripts" / "run_evaluation.py"
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_evaluation.py"
     # Provide bad paths to trigger failure
     result = subprocess.run(
         [sys.executable, str(script_path), "--checkpoint-run", str(tmp_path), "--eval-dataset", "missing.jsonl", "--output-dir", str(out_dir)],
@@ -88,7 +89,7 @@ def test_failed_attempts_are_preserved(tmp_path, status):
     out.mkdir()
     original = json.dumps({"execution_status": status})
     (out / "manifest.json").write_text(original)
-    script = Path(__file__).resolve().parents[1] / "scripts/run_evaluation.py"
+    script = Path(__file__).resolve().parents[2] / "scripts/run_evaluation.py"
     result = subprocess.run([sys.executable, str(script), "--checkpoint-run", str(tmp_path),
         "--eval-dataset", "missing.jsonl", "--output-dir", str(out)], capture_output=True, text=True, stdin=subprocess.DEVNULL)
     assert result.returncode != 0 and "Attempt directory already exists" in result.stderr
