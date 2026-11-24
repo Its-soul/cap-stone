@@ -10,6 +10,7 @@ from cert_recovery.adjudication.recovery_benchmark import run_recovery_benchmark
 from cert_recovery.adjudication.workflow import InsuranceAdjudication
 from cert_recovery.crypto import sha256
 from cert_recovery.models import CertificateStatus
+pytestmark = pytest.mark.adjudication
 
 
 def test_changed_evidence_and_stale_agent_outputs_detected():

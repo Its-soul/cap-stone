@@ -8,8 +8,10 @@ from cert_recovery.evaluation import (build_arithmetic_workflow, run_prepared_be
                                      run_replacement_experiment, run_fault_experiment)
 from cert_recovery.model_pipeline import run_finetuning, run_model_evaluation, run_pretrained_baseline, select_threshold
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.ml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def rows():
