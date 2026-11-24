@@ -18,6 +18,7 @@ from cert_recovery.adjudication.ablation import (
 )
 from cert_recovery.adjudication.domain import InsuranceClaim, ROLES, rule_decision
 from cert_recovery.adjudication.workflow import InsuranceAdjudication
+pytestmark = pytest.mark.adjudication
 
 
 def test_frozen_scenario_spec_and_oracle_consistency():

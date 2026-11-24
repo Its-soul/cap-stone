@@ -21,6 +21,7 @@ from cert_recovery.adjudication.recovery_benchmark import (
 )
 from cert_recovery.adjudication.workflow import InsuranceAdjudication
 from cert_recovery.crypto import sha256
+pytestmark = pytest.mark.adjudication
 
 
 # 1. Metric Numerators and Denominators
@@ -159,7 +160,7 @@ def test_recovery_benchmark_execution_bounds_all_scenarios():
 # 4. Source-Snapshot Completeness
 def test_source_snapshot_manifest_and_completeness():
     """Verify that critical source files exist and have non-empty valid content."""
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     required_files = [
         repo_root / "src/cert_recovery/adjudication/ablation.py",
         repo_root / "src/cert_recovery/adjudication/consensus.py",
@@ -170,9 +171,9 @@ def test_source_snapshot_manifest_and_completeness():
         repo_root / "src/cert_recovery/adjudication/model_agent.py",
         repo_root / "src/cert_recovery/adjudication/model_evaluation.py",
         repo_root / "scripts/run_insurance_ablation.py",
-        repo_root / "tests/test_ablation_study.py",
-        repo_root / "tests/test_provenance_recovery_integrity.py",
-        repo_root / "tests/test_insurance_adjudication.py",
+        repo_root / "tests/adjudication/test_ablation_study.py",
+        repo_root / "tests/adjudication/test_provenance_recovery_integrity.py",
+        repo_root / "tests/adjudication/test_insurance_adjudication.py",
     ]
     for file_path in required_files:
         assert file_path.exists(), f"Source file missing: {file_path}"
