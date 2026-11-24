@@ -7,6 +7,7 @@ import pytest
 from cert_recovery.annotation_review import review_example, summarize_reviews, write_exclusive, validate_sidecar
 from cert_recovery.crypto import sha256
 from cert_recovery.pinned_smoke import sha256_file
+pytestmark = pytest.mark.ml
 
 
 def example(scenario='nli_context', label=0, prediction=1, probability=.97):
