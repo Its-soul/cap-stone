@@ -8,6 +8,8 @@ from cert_recovery.metrics import (binary_metrics, calibration_metrics, compare_
                                    recovery_savings, reliability_summary)
 from cert_recovery.models import (Artifact, ArtifactKind as K, Certificate, CertificateStatus as S,
                                   RecoveryPlan, RecoveryStep, Ref)
+import pytest
+pytestmark = pytest.mark.core
 
 
 class GraphTests(unittest.TestCase):

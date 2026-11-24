@@ -4,6 +4,8 @@ from dataclasses import replace
 
 from cert_recovery import ArtifactKind as K, CertificateStatus as S, CertificateSystem, VerificationResult
 from cert_recovery.provenance import AuditJournal
+import pytest
+pytestmark = pytest.mark.core
 
 
 def copy_value(previous, supports):
