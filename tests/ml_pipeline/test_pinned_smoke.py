@@ -12,8 +12,10 @@ from unittest.mock import Mock, patch
 from cert_recovery.config import load_config
 from cert_recovery.pinned_smoke import (prediction_from_logits, prepare_smoke, run_pinned_smoke,
                                        save_new, sha256_file, validate_label_order)
+import pytest
+pytestmark = pytest.mark.ml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class PinnedSmokeTests(unittest.TestCase):

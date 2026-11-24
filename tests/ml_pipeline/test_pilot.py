@@ -14,8 +14,10 @@ from cert_recovery.model_pipeline import _prediction_report, validate_run_bindin
 from cert_recovery.model_pipeline import _loaded_provenance
 from cert_recovery.pilot import synthetic_pairs, workflow_cases, WARNING, audit_synthetic_identifiers
 from cert_recovery.pinned_smoke import prepare_smoke
+import pytest
+pytestmark = pytest.mark.ml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class PilotTests(unittest.TestCase):
