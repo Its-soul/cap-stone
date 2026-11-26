@@ -54,6 +54,7 @@ __pycache__/
 build/
 dist/
 .venv/
+.venv-*/
 .model_venv/
 venv/
 env/
