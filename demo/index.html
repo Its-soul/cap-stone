@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Claim Decision &amp; Recovery</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+    <main class="page">
+        <header class="page-header">
+            <h1>Claim Decision &amp; Recovery</h1>
+            <button type="button" class="secondary" id="new-claim" disabled>New claim</button>
+        </header>
+
+        <div class="workflow">
+            <section class="panel" aria-labelledby="claim-heading">
+                <h2 id="claim-heading">Claim details</h2>
+                <form id="claim-form">
+                    <div id="claim-fields"></div>
+                    <button class="primary claim-action" type="submit" id="claim-action" disabled>Run claim</button>
+                    <p id="claim-message" class="message" role="status" hidden></p>
+                </form>
+            </section>
+
+            <section class="panel" aria-labelledby="decision-heading">
+                <h2 id="decision-heading">Decision</h2>
+                <div class="decision-grid" aria-live="polite" aria-atomic="true">
+                    <article class="decision-card" id="previous-decision">
+                        <h3>Previous</h3>
+                        <p class="muted">No previous decision</p>
+                    </article>
+                    <article class="decision-card" id="current-decision">
+                        <h3>Current</h3>
+                        <p class="muted">Run a claim to see its decision.</p>
+                    </article>
+                </div>
+                <p id="recovery-status" class="message" role="status" hidden></p>
+
+                <h3 class="section-heading">What changed?</h3>
+                <div id="changes" class="change-list" aria-live="polite">
+                    <p class="empty">No edits yet</p>
+                </div>
+
+                <h3 class="section-heading" id="checks-heading">Specialist checks</h3>
+                <div class="table-frame">
+                    <table aria-labelledby="checks-heading">
+                        <thead><tr><th scope="col">Specialist</th><th scope="col">Status</th></tr></thead>
+                        <tbody id="check-rows"></tbody>
+                    </table>
+                </div>
+
+                <details class="audit" id="audit">
+                    <summary>
+                        <span class="certificate"><strong>Certificate</strong><span id="certificate-version">—</span></span>
+                        <span class="audit-toggle">View audit record <span class="chevron" aria-hidden="true"></span></span>
+                    </summary>
+                    <div class="audit-content" id="audit-content"><p>No claim has been run.</p></div>
+                </details>
+            </section>
+        </div>
+
+        <details class="v2">
+            <summary>
+                <span><span class="muted">Advisory prediction</span><strong>Check a dependency with V2</strong></span>
+                <span class="chevron" aria-hidden="true"></span>
+            </summary>
+            <form id="v2-form" class="v2-content">
+                <div class="v2-inputs">
+                    <label>Source record<textarea name="source" rows="4" maxlength="4000" required></textarea></label>
+                    <label>Assessment to check<textarea name="assessment" rows="4" maxlength="4000" required></textarea></label>
+                </div>
+                <button class="primary" type="submit" id="v2-action">Run V2</button>
+                <div id="v2-result" role="status" hidden></div>
+            </form>
+        </details>
+    </main>
+</body>
+</html>
