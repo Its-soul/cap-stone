@@ -73,6 +73,6 @@ def execute_notebook(nb_path: str):
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    target_nb = os.path.join(base_dir, "notebooks", "Model_Comparison_Laptop.ipynb")
+    target_nb = os.path.join(base_dir, "notebooks", "04_Model_Comparison_Laptop.ipynb")
     execute_notebook(target_nb)
 

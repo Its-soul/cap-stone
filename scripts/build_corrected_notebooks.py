@@ -1319,8 +1319,8 @@ def main():
     nb_dir = os.path.join(root, "notebooks")
     os.makedirs(nb_dir, exist_ok=True)
 
-    laptop_path = os.path.join(nb_dir, "Model_Comparison_Laptop.ipynb")
-    nvidia_path = os.path.join(nb_dir, "Model_Comparison_NVIDIA.ipynb")
+    laptop_path = os.path.join(nb_dir, "04_Model_Comparison_Laptop.ipynb")
+    nvidia_path = os.path.join(nb_dir, "05_Model_Comparison_NVIDIA.ipynb")
 
     laptop_nb = build_laptop_notebook()
     with open(laptop_path, "w", encoding="utf-8") as f:

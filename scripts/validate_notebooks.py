@@ -5,10 +5,11 @@ import os
 def validate_all_notebooks():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     notebooks = [
-        "01_Laptop_One_Epoch_12_Model_Benchmark.ipynb",
-        "02_NVIDIA_Lab_Extensive_Training.ipynb",
-        "Model_Comparison_Laptop.ipynb",
-        "Model_Comparison_NVIDIA.ipynb"
+        "01_Adjudication_Demo.ipynb",
+        "02_baseline_model.ipynb",
+        "03_Dependency_Model_V2.ipynb",
+        "04_Model_Comparison_Laptop.ipynb",
+        "05_Model_Comparison_NVIDIA.ipynb",
     ]
     for nb_name in notebooks:
         path = os.path.join(base_dir, "notebooks", nb_name)

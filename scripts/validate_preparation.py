@@ -11,14 +11,22 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_NOTEBOOKS = ["02_baseline_model.ipynb"]
+EXPECTED_PUBLIC_NOTEBOOKS = sorted([
+    "01_Adjudication_Demo.ipynb",
+    "02_baseline_model.ipynb",
+    "03_Dependency_Model_V2.ipynb",
+    "04_Model_Comparison_Laptop.ipynb",
+    "05_Model_Comparison_NVIDIA.ipynb",
+])
 RESEARCH_NOTEBOOKS = [f"{index:02d}_{name}.ipynb" for index, name in enumerate(
     ["data_preparation", "baseline_model", "finetuning", "model_evaluation", "dependency_experiments",
      "invalidation_experiments", "recovery_experiments", "final_benchmark"], 1)]
 
 
-def validate_notebooks(directory, expected):
+def validate_notebooks(directory, expected, allow_additional=None):
     actual = sorted(path.name for path in directory.glob("*.ipynb"))
-    assert actual == expected, f"Notebook names differ in {directory}: {actual}"
+    allowed = sorted(allow_additional) if allow_additional is not None else expected
+    assert actual == allowed, f"Notebook names differ in {directory}: {actual}"
     code_cells = 0
     for filename in expected:
         notebook = json.loads((directory / filename).read_text(encoding="utf-8"))
@@ -104,7 +112,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--private", action="store_true", help="Also validate locally preserved research, if present")
     args = parser.parse_args()
-    code_cells = validate_notebooks(ROOT / "notebooks", PUBLIC_NOTEBOOKS)
+    code_cells = validate_notebooks(ROOT / "notebooks", PUBLIC_NOTEBOOKS, allow_additional=EXPECTED_PUBLIC_NOTEBOOKS)
     validate_pins()
     validate_documents()
     config = yaml.safe_load((ROOT / "config/config.yaml").read_text(encoding="utf-8"))

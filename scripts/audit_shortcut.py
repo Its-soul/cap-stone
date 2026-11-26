@@ -4,10 +4,12 @@ from collections import defaultdict
 def audit_shortcut(jsonl_path):
     print(f"Auditing {jsonl_path}...")
     source_stats = defaultdict(lambda: {'pos': 0, 'neg': 0, 'total': 0})
-    
-    with open(jsonl_path, 'r') as f:
+    unique = set()
+
+    with open(jsonl_path, 'r', encoding='utf-8') as f:
         for line in f:
-            if not line.strip(): continue
+            if not line.strip():
+                continue
             data = json.loads(line)
             source = data['derivation']['intervention']['source']
             label = data['label']
@@ -16,10 +18,14 @@ def audit_shortcut(jsonl_path):
                 source_stats[source]['pos'] += 1
             else:
                 source_stats[source]['neg'] += 1
-                
+            if 'premise' in data and 'hypothesis' in data:
+                unique.add((data['premise'], data['hypothesis']))
+
+    if unique:
+        print(f"Unique pairs: {len(unique)}")
     for source in sorted(source_stats.keys()):
         stats = source_stats[source]
-        print(f"Source {source}: {stats['pos']} positive / {stats['total']} total ({stats['pos']/stats['total']:.2%} positive)")
+        print(f"Source {source}: {stats['pos']} positive / {stats['neg']} negative / {stats['total']} total ({stats['pos']/stats['total']:.2%} positive)")
 
 if __name__ == '__main__':
     import sys
