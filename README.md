@@ -1,211 +1,158 @@
-# Certificate Recovery
+# Verifiable Multi-Agent Fault-Tolerant Adjudication System with Cryptographic Causal Provenance
 
-## What is this project?
+An academic research system combining a **deterministic versioned certificate engine and SHA-256 provenance DAG** with **advisory machine learning models** for fault-tolerant multi-agent decision workflows.
 
-This final-year project explores how software agents can make decisions without
-blindly trusting each other. An **agent** is a program with a specific job, such
-as checking an insurance policy. We check their results, record the supporting
-evidence, and rebuild only affected work after failures or changes. Today's demo
-uses fixed-rule simulators; independent AI models are planned.
+---
 
-## The Problem
+## START HERE
 
-One wrong or compromised agent could mislead the others reviewing an insurance
-claim, causing an unfair approval or rejection. We want to catch those mistakes,
-explain decisions, and recover without repeating valid work.
+- **Live Browser Demonstration:** Run `python scripts/run_claim_demo.py` from the repository root and open `http://127.0.0.1:8000/` (frontend source: [demo/index.html](demo/index.html)).
+- **Core Implementation:** [src/cert_recovery/engine.py](src/cert_recovery/engine.py) (DAG & certificate recovery) and [src/cert_recovery/adjudication/workflow.py](src/cert_recovery/adjudication/workflow.py) (multi-agent adjudication).
+- **Offline Validation Notebook:** [notebooks/01_Adjudication_Demo.ipynb](notebooks/01_Adjudication_Demo.ipynb).
+- **Candidate V2 Dependency Model Walkthrough:** [notebooks/03_Dependency_Model_V2.ipynb](notebooks/03_Dependency_Model_V2.ipynb).
+- **Verified Empirical Results:** [docs/EVALUATION.md](docs/EVALUATION.md) and [results/](results/).
 
-## What We Are Building
+---
+
+## Problem Statement and Core Contribution
+
+Multi-agent LLM decision pipelines are vulnerable to silent hallucinations, cascading corruption across agents, and expensive full-pipeline restarts whenever a single source document changes.
+
+This project enforces a **strict boundary between untrusted advisory AI/ML models and authoritative deterministic verification**:
+
+1. **Disjoint Specialist Composition (`composition-v1`):** `policy`, `evidence`, `risk`, and `compliance` specialists evaluate domain-specific obligations (`coverage-v1`, `documents-v1`, `fraud-screen-v1`, `identity-consent-v1`) rather than casting interchangeable whole-claim votes.
+2. **Non-Overridable Mandatory Safety Rules:** Deterministic rule gates and typed schema validation intercept malformed, conflicting, or policy-ineligible proposals (`0` unsafe approvals across verified ablation suites). Confidence scores have zero certificate or payout authority.
+3. **SHA-256 Causal Provenance & Selective Recovery:** Every artifact and certificate transition is hash-chained in `EventDAG` (`src/cert_recovery/adjudication/ledger.py`). When an evidence fact changes, only affected downstream nodes are invalidated and recomputed while unaffected specialist certificates remain valid at version `v1`.
+4. **Advisory Dependency Prediction:** A fine-tuned `DeBERTa-v3-small` model (`Candidate V2`) predicts candidate dependency edges without modifying authoritative DAG edges or bypassing verification.
+
+---
+
+## System Workflow
 
 ```text
-Insurance claim
-      ↓
-Policy, evidence, risk and compliance agents
-      ↓
-Check evidence, rules and confidence
-      ↓
-Flag faulty results and exclude invalid votes
-      ↓
-Combine valid votes and apply mandatory rules
-      ↓
-Record the decision and its supporting history
-      ↓
-If something fails or changes, rebuild only affected work
+Claim Evidence (10 domain facts)
+      |
+      +--> Policy      (coverage, waiting period, limit)  --+
+      +--> Evidence    (documents available, invoice match) |
+      +--> Risk        (duplicate claim, provider flag)     +--> Schema & Rule Validation
+      +--> Compliance  (identity verified, consent)       --+
+                                                            |
+                                  +-------------------------+
+                                  v
+            Specialist Composition & Mandatory Rule Gate
+             - Policy violated        -> REJECT
+             - Any failure/uncertain  -> REVIEW
+             - All checks satisfied   -> APPROVE
+                                  |
+                                  v
+            Versioned Certificate & SHA-256 EventDAG
+             - Edit 1 fact -> Invalidate affected branch only
+             - Reuse unaffected v1 certificates -> Update decision
 ```
 
-Confidence influences the proposed decision, but cannot override required rules.
-When the proposal conflicts with those rules, the system returns **REVIEW**.
+### Selective Recovery Example
 
-## Why This Is Different
+1. A hospitalization claim is submitted with `documents_available = No` (`policy`, `risk`, and `compliance` pass).
+2. All four specialists run (`v1`), and the system returns **REVIEW** (required documents missing).
+3. The claimant supplies the missing document (`documents_available` changes `No -> Yes`).
+4. `CertificateSystem` invalidates only the `evidence` branch: `evidence` reruns (`Reran`), while `policy`, `risk`, and `compliance` remain **Reused** at `v1`, issuing round certificate `v2` and updating the decision to **APPROVE**.
 
-- **Several roles:** separate checks for coverage, documents, risk and compliance.
-- **Checked votes:** use confidence and validation, rather than just counting votes.
-- **Deliberate failure testing:** simulate wrong, misleading and broken outputs.
-- **Traceable history:** link decisions to evidence and detect edits to saved records.
-- **Selective recovery:** reuse valid work instead of restarting everything.
+---
 
-## Current Implementation
+## Quickstart
 
-- Four insurance agents returning structured decisions, confidence, evidence and rule references.
-- Confidence-weighted voting and preliminary fault detection across six simulated failure modes.
-- Linked records of rules, inputs, agent actions, votes and decisions, with tamper checks.
-- Versioned verification records and repeatable recovery of affected work.
-- A simple majority-vote baseline and offline experiments with configurable fault rates.
+### Installation
 
-## Current Status
-
-This is a research project still under development, not a production insurance service.
-
-### Implemented
-
-The features above run offline and have behavioral tests.
-
-### Prototype / In Progress
-
-- Agents are **deterministic simulators**: the same facts produce the same rule-based answer.
-- Confidence values are manually assigned, not yet calibrated (checked against observed accuracy).
-- Fault detection checks explicit rules; it does not establish malicious intent.
-- Some coverage exclusions return REVIEW rather than an automatic rejection.
-- Tamper checks need a trusted saved checkpoint; replacing both the history and checkpoint defeats them.
-
-### Future Work
-
-Formal Byzantine fault-tolerance guarantees (proofs about behavior despite faulty
-or malicious agents) remain future work. **Robustness at 40% adversarial
-interference is a research target, not a proven result.**
-
-## Example
-
-A synthetic **₹50,000** hospitalization claim has a **₹100,000** policy limit.
-Coverage, waiting period, documents, risk and identity checks pass. The agents
-recommend approval and the system records APPROVE.
-
-If the risk agent fails, its output is excluded. Once the failure is cleared,
-recovery reruns it and updates decision records, reusing the other three agents' work.
-
-## Technical Overview
-
-The core uses **Python 3.11+ and PyYAML**. JSON records hold exact artifact versions
-and their dependencies. A certificate records that a registered verification rule
-passed; final decisions require valid supporting certificates.
-
-SHA-256 hashes provide digital fingerprints for the audit chain and **event DAG**,
-a graph linking events to their contributors. These support tamper checks and
-rule tracing, not complete causal inference.
-
-Optional model advice uses exact input versions and hashes: stale advice is
-rejected, and unavailable or ambiguous advice is ignored. Confidence cannot issue
-certificates, authorize decisions or establish dependencies by itself.
-
-The system runs in memory in a trusted process. Callers supply source changes and
-dependencies. There is no durable storage, distributed transaction or real external
-claim-processing action; remote model weights and broader performance remain unverified.
-
-## Running the Project
-
-Run from the repository root. On Windows, use `py -3` instead of `python` if needed.
+Requires **Python 3.11+**. The core engine requires only `PyYAML`.
 
 ```sh
 python -m venv .venv
-# Activate: Windows PowerShell .\.venv\Scripts\Activate.ps1
-# Activate: macOS/Linux source .venv/bin/activate
-python -m pip install -e .
-python -m pip install -r requirements-test.txt
+# Windows PowerShell: .\.venv\Scripts\Activate.ps1
+# macOS/Linux:        source .venv/bin/activate
+python -m pip install -e ".[remote,test]"
 ```
 
-Run the insurance, failure, tamper-detection, recovery and comparison demos:
+Optional ML extras (`laptop`, `nvidia`) are declared in [pyproject.toml](pyproject.toml) and should be kept in a separate environment from `remote` due to `huggingface-hub` version constraints (see [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md)).
+
+### Run the Demonstration
 
 ```sh
-python scripts/run_insurance_prototype.py
+python scripts/run_claim_demo.py
 ```
 
-Run the small synthetic experiment:
+Open `http://127.0.0.1:8000/`. Use **Run claim** to evaluate a case, edit any claim field and click **Apply changes** to observe selective recomputation and audit events, or click **New claim** to reset. Pass `--port <PORT>` to change the port. The optional V2 dependency panel loads a local `CERT_RECOVERY_V2_RUN` bundle when launched from an environment with `torch` and `transformers`.
+
+### Run Tests and Offline Validation
 
 ```sh
-python scripts/run_insurance_prototype.py --experiments --trials 20 --seed 42
-```
-
-Add `--output path/to/new.json` to save records without overwriting files.
-These offline commands neither enable V3 nor call remote models.
-
-For the optional remote client and its offline test dependencies:
-
-```sh
-python -m pip install -e ".[remote]"
-python run_baseline.py --help
-```
-
-The help command submits nothing. PyTorch/Transformers are optional and only
-needed for model workflows; see [model setup](docs/architecture/MODEL.md).
-
-## Tests
-
-The [recorded milestone validation](docs/academic_defense/RESEARCH_PROTOTYPE.md#validation-record-and-reproducible-checkpoint)
-reports **352 passed, 1 skipped and 75 subtests passed**, including 48 insurance
-tests, 8 ablation tests, 9 provenance/recovery tests, 9 model agent tests, and 7 harness validation tests.
-
-```sh
+# Complete offline test suite
 python -m pytest tests -q
-python -m pytest tests/adjudication/test_insurance_adjudication.py -q
-python -m pytest tests/adjudication/test_ablation_study.py -q
-python -m pytest tests/adjudication/test_provenance_recovery_integrity.py -q
-python -m pytest tests/adjudication/test_model_agent.py -q
-python -m pytest tests/adjudication/test_harness_repaired_validation.py -q
+
+# End-to-end deterministic prototype, tamper detection, and recovery demo
+python scripts/run_insurance_prototype.py
+
+# Validate public configs, pins, documentation links, and notebook syntax
 python scripts/validate_preparation.py
+python scripts/validate_notebooks.py
 ```
 
-Run the 8-arm factorial offline ablation study:
+---
 
-```sh
-python scripts/run_insurance_ablation.py --suite extended --seeds 42 101 2024 --output results/ablation/my_ablation.json
+## Repository Structure
+
+```text
+certificate-recovery/
+|-- README.md
+|-- pyproject.toml
+|-- requirements.txt
+|-- requirements-colab.txt
+|-- .env.example
+|-- .gitignore
+|-- run_baseline.py              # Optional remote NLI smoke runner
+|-- remote_model_client.py       # Public HF Space adapter client
+|-- semantic_advice.py           # Version/hash-bound advisory NLI helper
+|-- baseline_tests.json          # Six diagnostic NLI smoke fixtures
+|-- config/                      # System, pinned model, and benchmark configs
+|-- data/examples/               # Reference JSONL schema examples
+|-- demo/                        # Interactive local browser demonstration (index.html)
+|-- docs/                        # Consolidated technical documentation
+|-- notebooks/                   # Five canonical research and demo notebooks
+|-- research_benchmark/          # 12-model registry, loaders, trainers, metrics, plots
+|-- scripts/                     # CLI demos, ablation runners, report builders, validators
+|-- src/cert_recovery/           # Core engine, crypto DAG, adjudication, and ML pipelines
+|-- tests/                       # Unit, adjudication, integration, ML, and remote tests
+|-- results/                     # Ignored generated metrics, reports, and figures
+`-- _private/                    # Ignored frozen checkpoints, logs, and internal archive
 ```
 
-Most V2 tests use mocks, without model weights. The optional private-checkpoint
-test replays two saved examples without training or changing results. In an
-existing model environment:
+---
 
-```sh
-python -m pip install -e ".[test]"
-```
+## Verified Results Summary
 
-Set `CERT_RECOVERY_V2_RUN` to a completed V2 bundle, then run:
+*All offline prototype benchmarks use deterministic rule simulators or synthetic fixtures unless explicitly noted as local checkpoint or ONNX inference.*
 
-```sh
-pytest tests/integration/test_v2_checkpoint.py -q
-```
+- **Factorial Adjudication Ablation (`N = 150`, seeds `42, 101, 2024`):** Enabling the deterministic rule gate improved 3-class accuracy by **+48.17 pp** on average across matched configurations (`Arm E`: 72.0% vs. `Arm D`: 22.7%) and eliminated unsafe approvals (`0` across all gated arms vs. `107–115` without gating).
+- **Specialist Composition (`composition-v1`):** Replacing interchangeable whole-claim votes with disjoint specialist obligations eliminated the 42 false `REVIEW` deferrals observed under legacy voting while preserving `0` unsafe approvals.
+- **Selective Recovery Benchmark (`results/recovery/`):** Single-branch updates rebuild `1` specialist while preserving `3` at `v1` (`4.0` vs. `7.0` configured cost units). Under ~0.01ms in-memory mock agents, graph hashing limits wall-clock speedup to `~1.12x–1.27x` (and can be slower under noise); meaningful wall-clock savings appear when avoiding heavy LLM inference calls (~37s/call on local CPU for INT8 `Qwen2.5-0.5B`).
+- **Candidate V2 Dependency Model (`DeBERTa-v3-small`, $\tau = 0.20$):** Achieved **87.5%** validation accuracy (`0.873` macro-F1, `n=64`), **91.7%** final held-out accuracy (`0.916` macro-F1, `0` false negatives, `n=96`), and **82.8%** stress accuracy (`n=384`), while exposing a semantic-overlap confound (`16/16` failures on `nli_context` independent rows) that motivated the **unexecuted** Candidate V3 contrast formulation.
+- **Compliance Model Adapter:** Schema enforcement and `CONFIRMED_FAILURE` weight zeroing were verified across 11 cases via `mock_compliance_backend` (`live_backend_executed: false`); prompt calibration on `Qwen2.5-0.5B-Instruct` ONNX was evaluated separately on 4 scenarios.
 
-Without that environment variable, this test skips.
+---
 
-## Research Direction / Future Work
+## Known Limitations
 
-Next steps are stronger independent models, confidence checked against actual
-accuracy, more realistic adversarial tests, stronger fault-tolerance evaluation,
-authenticated decision histories and larger experiments.
+- **Simulation vs. Live Multi-LLM Inference:** End-to-end adjudication suites rely on deterministic `RuleAgent` simulators and mock compliance outputs rather than live multi-GPU LLM execution.
+- **Uncalibrated Confidence:** Agent confidence values are authored or uncalibrated; probability calibration (Platt/temperature scaling) remains future work.
+- **Cryptographic Trust Boundary:** `EventDAG` uses unkeyed SHA-256 hashes; detecting history truncation requires an independently retained checkpoint anchor, without asymmetric signatures or formal Byzantine quorum protocols.
+- **40% Adversarial Claim Unproven:** Synthetic Bernoulli fault-injection tests at requested rates up to 40% illustrate rule containment on small authored suites and do **not** establish general Byzantine fault tolerance.
+- **Candidate V3 Prepared Only:** V3 datasets and launch guards exist in `src/cert_recovery/v3_preparation.py` and `scripts/run_candidate_v3.py`, but remain intentionally unexecuted pending external review.
 
-The [original project description](docs/academic_defense/PROJECT_PROPOSAL.md) is preserved separately.
+---
 
-## Documentation Index
+## Documentation
 
-### System Architecture & Data Contracts
-- [Architecture and API](docs/architecture/ARCHITECTURE.md)
-- [Specialist Composition Contract](docs/architecture/COMPOSITION_CONTRACT.md)
-- [Data Formats & Schemas](docs/architecture/DATA.md)
-- [Model Setup & Advisory Clients](docs/architecture/MODEL.md)
-
-### Research Methodology & Model Audits
-- [Custom Model Research Contribution (Stages A–F)](docs/research_methodology/Custom_Model_Contribution.md)
-- [What Counts as a Dependency (Support Closure)](docs/research_methodology/DEPENDENCY_TARGET.md)
-- [Research Model Selection Report (12-Model Framework)](docs/research_methodology/Research_Model_Selection_Report.md)
-- [Existing Models Audit Report](docs/research_methodology/existing_models_audit.md)
-- [Dataset and Model Compatibility Analysis](docs/research_methodology/dataset_model_compatibility.md)
-
-### Experimental Plans & Feasibility Roadmaps
-- [Specialist-Role Composition Evaluation Plan](docs/experimental_plans/EVALUATION_PLAN.md)
-- [12-Model Experimental Design (RQ1–RQ4)](docs/experimental_plans/experimental_design.md)
-- [Laptop One-Epoch Feasibility Report](docs/experimental_plans/One_Epoch_Feasibility_Report.md)
-- [NVIDIA Laboratory Extensive Training Roadmap](docs/experimental_plans/NVIDIA_Extensive_Training_Report.md)
-
-### Academic Defense & Milestones
-- [Teacher Viva & Oral Defense Guide](docs/academic_defense/Teacher_Viva_Explanation.md)
-- [Mentor Presentation Summary](docs/academic_defense/mentor_model_selection_summary.md)
-- [Insurance Prototype Milestone Report](docs/academic_defense/RESEARCH_PROTOTYPE.md)
-- [Research Benchmark Execution Guide](docs/academic_defense/README_RESEARCH_BENCHMARK.md)
+- [Architecture & Data Contracts](docs/ARCHITECTURE.md)
+- [Research Methodology & Dependency Target](docs/METHODOLOGY.md)
+- [Models, Baselines & Execution Tiers](docs/MODELS.md)
+- [Evaluation & Reconciled Findings](docs/EVALUATION.md)
+- [Reproducibility & Verification Guide](docs/REPRODUCIBILITY.md)
