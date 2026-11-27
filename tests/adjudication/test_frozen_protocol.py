@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from cert_recovery.oracle.frozen_v1 import (
+from cert_recovery.oracle.benchmark_v1 import (
     GENERATOR_SEED,
     SPEC_VERSION,
     audit_frozen_dataset,
@@ -22,7 +22,7 @@ from cert_recovery.oracle.protocol_v1 import (
     paired_bootstrap_ci,
     wilson_ci,
 )
-from scripts.freeze_phase5_protocol import freeze_phase5
+from scripts.freeze_benchmark_protocol import freeze_phase5
 
 pytestmark = pytest.mark.adjudication
 
