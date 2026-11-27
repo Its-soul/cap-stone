@@ -12,10 +12,10 @@ from .composition import (
     SUPPORTED_PRECEDENCE,
     assess_specialist,
     compose_specialist_assessments,
-    verify_specialist_composition,
 )
 from .consensus import ConfidenceWeightedConsensus, Vote, assess, majority
 from .domain import FAULT_MODES, PROMPTS, ROLES, RULES, InsuranceClaim, RuleAgent, rule_decision, simulate_fault
+from .independent_verifier import verify_composition_independently
 from .ledger import EventDAG
 
 
@@ -191,8 +191,7 @@ class InsuranceAdjudication:
         return result
 
     def _verify_composition_round(self, subject, ancestry):
-        agents = tuple(self.system.artifact(ref) for ref in subject.supports)
-        return verify_specialist_composition(subject.payload, agents, self.ledger, precedence=self.precedence)
+        return verify_composition_independently(subject, ancestry, self.ledger, precedence=self.precedence)
 
     def _verify_round(self, subject, ancestry):
         try:

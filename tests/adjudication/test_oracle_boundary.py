@@ -53,6 +53,7 @@ RUNTIME_MODULE_PATHS = [
     REPO_ROOT / "src/cert_recovery/adjudication/domain.py",
     REPO_ROOT / "src/cert_recovery/adjudication/consensus.py",
     REPO_ROOT / "src/cert_recovery/adjudication/composition.py",
+    REPO_ROOT / "src/cert_recovery/adjudication/independent_verifier.py",
     REPO_ROOT / "src/cert_recovery/adjudication/ledger.py",
     REPO_ROOT / "src/cert_recovery/adjudication/workflow.py",
     REPO_ROOT / "src/cert_recovery/adjudication/model_agent.py",
@@ -118,6 +119,7 @@ def test_runtime_imports_leave_oracle_unloaded_in_sys_modules():
         "import cert_recovery.adjudication.domain; "
         "import cert_recovery.adjudication.consensus; "
         "import cert_recovery.adjudication.composition; "
+        "import cert_recovery.adjudication.independent_verifier; "
         "import cert_recovery.adjudication.ledger; "
         "import cert_recovery.adjudication.workflow; "
         "import cert_recovery.adjudication.model_agent; "
@@ -144,6 +146,7 @@ def test_runtime_adjudication_modules_contain_no_oracle_label_references():
         REPO_ROOT / "src/cert_recovery/adjudication/domain.py",
         REPO_ROOT / "src/cert_recovery/adjudication/consensus.py",
         REPO_ROOT / "src/cert_recovery/adjudication/composition.py",
+        REPO_ROOT / "src/cert_recovery/adjudication/independent_verifier.py",
         REPO_ROOT / "src/cert_recovery/adjudication/ledger.py",
         REPO_ROOT / "src/cert_recovery/adjudication/workflow.py",
         REPO_ROOT / "src/cert_recovery/adjudication/model_agent.py",
