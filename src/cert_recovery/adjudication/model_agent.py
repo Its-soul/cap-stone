@@ -962,8 +962,11 @@ def build_phase4_role_backends(
     backoff_seconds: float = 0.25,
     prompt_version: str = "v1",
     budget: LiveCallBudget | None = None,
+    min_call_interval_sec: float | None = None,
 ) -> dict[str, ModelAgentAdapter]:
     """Build four role-isolated specialist backends conforming to Phase 4 >=7B policy."""
+    if min_call_interval_sec is not None and isinstance(client, HostedChatModelClient):
+        client.min_call_interval_sec = float(min_call_interval_sec)
     return {
         role: ModelAgentAdapter(
             make_specialist_profile(
