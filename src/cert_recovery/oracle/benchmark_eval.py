@@ -43,7 +43,7 @@ from ..adjudication.provenance_verifier import TRUST_MODEL_SUMMARY, query_decisi
 from ..adjudication.workflow import SpecialistCompositionAdjudication
 from ..crypto import canonical_json, sha256
 from ..models import Ref
-from .frozen_v1 import (
+from .benchmark_v1 import (
     GENERATOR_SEED,
     SWEEP_SEEDS,
     load_blind_external_cases,
@@ -98,7 +98,7 @@ def _append_jsonl(path: Path, row: dict[str, Any]) -> None:
 
 
 def verify_frozen_manifest(
-    manifest_path: Path = REPO_ROOT / "results" / "phase5" / "frozen_evaluation_manifest.json",
+    manifest_path: Path = REPO_ROOT / "datasets" / "frozen_v1" / "frozen_evaluation_manifest.json",
     repo_root: Path = REPO_ROOT,
 ) -> dict[str, Any]:
     """Verify every frozen Phase 5 artifact SHA-256 hash; abort with ValueError on mismatch."""

@@ -25,7 +25,7 @@ from cert_recovery.adjudication.model_agent import (
     shared_model_correlation_risk_note,
     validate_specialist_model_id,
 )
-from cert_recovery.adjudication.phase4_runner import (
+from cert_recovery.adjudication.pilot_runner import (
     PHASE4_DEV_CASES,
     FakeRoleSpecialistClient,
     execute_phase4_suite,
@@ -479,7 +479,7 @@ def test_http_429_server_hint_parsing_and_bounded_backoff(monkeypatch):
 def test_min_call_interval_enforces_spacing_and_cli_flag(monkeypatch):
     """Verify min_call_interval_sec sleeps between consecutive calls and CLI exposes --min-call-interval-sec."""
     import io
-    from scripts.run_phase4_pilot import parse_args
+    from scripts.run_pilot_workflow import parse_args
 
     args = parse_args(["--provider", "groq", "--model-id", "openai/gpt-oss-20b", "--min-call-interval-sec", "1.25"])
     assert args.min_call_interval_sec == 1.25
