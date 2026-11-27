@@ -98,7 +98,7 @@ def _append_jsonl(path: Path, row: dict[str, Any]) -> None:
 
 
 def verify_frozen_manifest(
-    manifest_path: Path = REPO_ROOT / "datasets" / "frozen_v1" / "frozen_evaluation_manifest.json",
+    manifest_path: Path = REPO_ROOT / "datasets" / "benchmark_v1" / "frozen_evaluation_manifest.json",
     repo_root: Path = REPO_ROOT,
 ) -> dict[str, Any]:
     """Verify every frozen Phase 5 artifact SHA-256 hash; abort with ValueError on mismatch."""

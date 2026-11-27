@@ -422,11 +422,11 @@
       "sha256": "6e086f7182d38823023d05eb1675c196ed195319582e40729c11df045a386cf5"
     },
     "dev_inputs": {
-      "path": "datasets\\frozen_v1\\dev_inputs.jsonl",
+      "path": "datasets/benchmark_v1\\dev_inputs.jsonl",
       "sha256": "fc3dc1d8636087ee466d0b989163f9791f901decc1970a49f2432d9ac13bedbe"
     },
     "dev_oracle_labels": {
-      "path": "datasets\\frozen_v1\\dev_oracle_labels.jsonl",
+      "path": "datasets/benchmark_v1\\dev_oracle_labels.jsonl",
       "sha256": "cc09bcf0fb8ec8b070e2f8664229d87c5fc95ea9cb36ca86e461328a3b46842d"
     },
     "evaluation_protocol_v1": {
@@ -434,19 +434,19 @@
       "sha256": "d2119f08150e2f8677eafe94e0db142d6eb0d29e0cd4df0c8078530d96516a04"
     },
     "test_inputs": {
-      "path": "datasets\\frozen_v1\\test_inputs.jsonl",
+      "path": "datasets/benchmark_v1\\test_inputs.jsonl",
       "sha256": "4dd9d70b6f3dcb56ecf25fd236f854fa0a3f30b6ca5e14a4ed181597d4d512ff"
     },
     "test_oracle_labels": {
-      "path": "datasets\\frozen_v1\\test_oracle_labels.jsonl",
+      "path": "datasets/benchmark_v1\\test_oracle_labels.jsonl",
       "sha256": "06e359a067cfc34185d004432be2b4dfb34fd33e5f7879415536138923db86d3"
     },
     "test_update_inputs": {
-      "path": "datasets\\frozen_v1\\test_update_paths.jsonl",
+      "path": "datasets/benchmark_v1\\test_update_paths.jsonl",
       "sha256": "c298eb2467a04daf050e95259e8da0afe48761b0f1ca018359565e7fe673b957"
     },
     "test_update_oracle_labels": {
-      "path": "datasets\\frozen_v1\\test_update_oracle_labels.jsonl",
+      "path": "datasets/benchmark_v1\\test_update_oracle_labels.jsonl",
       "sha256": "6523c7443bdd9fe7c6ede7a48288ef5fa849b4ae2d63b709bae3cc3d540c5fde"
     }
   },
