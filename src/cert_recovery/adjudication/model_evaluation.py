@@ -1,39 +1,14 @@
 """Bounded evaluation harness comparing deterministic vs model-backed role agent."""
-from dataclasses import asdict, replace
 import json
 from pathlib import Path
 import time
 from typing import Callable
 
-from .ablation import extended_scenarios, historical_cases
+from ..oracle.scoring import compliance_evaluation_cases
 from .consensus import assess
 from .domain import InsuranceClaim, ROLES, RuleAgent, rule_decision
 from .model_agent import ModelAgentAdapter, ModelProfile
 from .workflow import InsuranceAdjudication
-
-
-def compliance_evaluation_cases():
-    """Frozen set of 11 claims exercising all compliance states and whole-claim conditions."""
-    base = InsuranceClaim()
-    cases = []
-    # 10 extended scenarios
-    for item in extended_scenarios():
-        cases.append({
-            "case_id": item["case_id"],
-            "claim": item["claim"],
-            "description": item["description"],
-            "expected_role_decision": rule_decision("compliance", item["claim"].facts("compliance")),
-            "expected_claim_label": item["label"],
-        })
-    # Plus historical missing-ID case
-    cases.append({
-        "case_id": "hist_4_missing_id",
-        "claim": replace(base, identity_verified=False),
-        "description": "Historical compliance unverified identity",
-        "expected_role_decision": "REVIEW",
-        "expected_claim_label": "REVIEW",
-    })
-    return cases
 
 
 def mock_model_client(messages: list[dict[str, str]], profile: ModelProfile) -> str:

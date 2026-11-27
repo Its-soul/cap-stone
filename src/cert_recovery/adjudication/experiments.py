@@ -1,20 +1,10 @@
 """Seeded, offline output-corruption experiments; not prompt-injection evidence."""
 import random
-from dataclasses import replace
 
 from ..metrics import ratio
+from ..oracle.scoring import legacy_experiment_cases as cases
 from .domain import FAULT_MODES, ROLES, InsuranceClaim
 from .workflow import InsuranceAdjudication
-
-
-def cases():
-    """Authored labels kept outside the agents and certificate verifier."""
-    base = InsuranceClaim()
-    return [(base, "APPROVE"),
-            (replace(base, hospitalization_covered=False), "REJECT"),
-            (replace(base, documents_available=False), "REVIEW"),
-            (replace(base, duplicate_claim=True), "REVIEW"),
-            (replace(base, identity_verified=False), "REVIEW")]
 
 
 def run_experiments(*, trials=20, seed=42, rates=(0., .1, .2, .3, .4)):

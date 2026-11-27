@@ -17,7 +17,14 @@ from pathlib import Path
 import random
 
 from ..crypto import canonical_json, sha256
-from .ablation import calculate_metrics, calculate_paired_disagreements, extended_scenarios, historical_cases
+from ..oracle.scoring import (
+    calculate_metrics,
+    calculate_paired_disagreements,
+    evaluate_rule_oracle,
+    extended_scenarios,
+    historical_cases,
+    mixed_scenarios,
+)
 from .composition import (
     COMPOSITION_CONTRACT_VERSION,
     PRECEDENCE_STRICT_AUDIT,
@@ -66,49 +73,6 @@ COMPOSITION_METHOD_REGISTRY = {
         "role_fusion_override": False,
     },
 }
-
-
-def mixed_scenarios() -> list[dict]:
-    """Small separately specified suite of 6 mixed-condition and uncertainty scenarios."""
-    base = InsuranceClaim()
-    return [
-        {
-            "case_id": "mix_0_exclusion_and_missing_docs",
-            "claim": replace(base, hospitalization_covered=False, documents_available=False),
-            "label": "REJECT",
-            "description": "Hospitalization not covered + missing documents (substantive exclusion)",
-        },
-        {
-            "case_id": "mix_1_exclusion_and_duplicate_claim",
-            "claim": replace(base, waiting_period_satisfied=False, duplicate_claim=True),
-            "label": "REJECT",
-            "description": "Waiting period unsatisfied + duplicate claim flagged (substantive exclusion)",
-        },
-        {
-            "case_id": "mix_2_exclusion_and_missing_consent",
-            "claim": replace(base, amount_inr=150_000, coverage_limit_inr=100_000, consent_available=False),
-            "label": "REJECT",
-            "description": "Claim amount exceeds limit + missing consent (substantive exclusion)",
-        },
-        {
-            "case_id": "mix_3_clean_policy_missing_docs_and_risk",
-            "claim": replace(base, documents_available=False, provider_flagged=True),
-            "label": "REVIEW",
-            "description": "Clean policy facts + missing documents + provider flagged (procedural deferral)",
-        },
-        {
-            "case_id": "mix_4_policy_exclusion_and_unverified_id",
-            "claim": replace(base, hospitalization_covered=False, identity_verified=False),
-            "label": "REJECT",
-            "description": "Hospitalization not covered + unverified identity (substantive exclusion)",
-        },
-        {
-            "case_id": "mix_5_clean_policy_invoice_mismatch",
-            "claim": replace(base, invoice_matches=False),
-            "label": "REVIEW",
-            "description": "Clean policy facts + invoice mismatch (procedural deferral)",
-        },
-    ]
 
 
 def run_composition_study(
@@ -165,8 +129,7 @@ def run_composition_study(
                 gate_strict = strict_wf.result()["gate"]
 
                 # 4. Evaluate Method F: Deterministic Rules Only (Pure Oracle)
-                local_rules = [rule_decision(r, claim.facts(r)) for r in ROLES]
-                dec_f = "REJECT" if "REJECT" in local_rules else "REVIEW" if "REVIEW" in local_rules else "APPROVE"
+                dec_f = evaluate_rule_oracle(claim)
 
                 decisions = {
                     "E": dec_e,

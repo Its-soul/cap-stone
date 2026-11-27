@@ -1,0 +1,36 @@
+name: Offline CI
+
+on:
+  push:
+    branches: ["main", "cleanup/**"]
+  pull_request:
+
+jobs:
+  offline-tests:
+    name: Offline Test Suite & Reproducibility (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install core and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+
+      - name: Run offline pytest suite
+        run: python -m pytest tests -q
+
+      - name: Run offline deterministic reproducibility check
+        run: python run_all.py --output-dir results/ci_repro

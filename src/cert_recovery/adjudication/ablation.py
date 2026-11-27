@@ -16,6 +16,13 @@ import random
 
 from ..crypto import canonical_json, sha256
 from ..metrics import ratio
+from ..oracle.scoring import (
+    calculate_metrics,
+    calculate_paired_disagreements,
+    evaluate_rule_oracle,
+    extended_scenarios,
+    historical_cases,
+)
 from .consensus import ConfidenceWeightedConsensus, Vote, majority
 from .domain import DECISIONS, FAULT_MODES, ROLES, RULES, InsuranceClaim, rule_decision
 from .workflow import InsuranceAdjudication
@@ -110,35 +117,6 @@ METHOD_REGISTRY = {
 }
 
 
-def historical_cases():
-    """Exact 5 authored cases from the historical prototype."""
-    base = InsuranceClaim()
-    return [
-        {"case_id": "hist_0_approve", "claim": base, "label": "APPROVE", "description": "Clean baseline claim"},
-        {"case_id": "hist_1_exclusion", "claim": replace(base, hospitalization_covered=False), "label": "REJECT", "description": "Policy exclusion (hospitalization not covered)"},
-        {"case_id": "hist_2_missing_docs", "claim": replace(base, documents_available=False), "label": "REVIEW", "description": "Evidence missing documents"},
-        {"case_id": "hist_3_duplicate_claim", "claim": replace(base, duplicate_claim=True), "label": "REVIEW", "description": "Risk duplicate claim screen"},
-        {"case_id": "hist_4_missing_id", "claim": replace(base, identity_verified=False), "label": "REVIEW", "description": "Compliance unverified identity"},
-    ]
-
-
-def extended_scenarios():
-    """10 frozen scenarios covering all domain rule predicates and decision classes."""
-    base = InsuranceClaim()
-    return [
-        {"case_id": "ext_0_clean_standard", "claim": base, "label": "APPROVE", "description": "Standard clean claim (INR 50,000 / 100,000)"},
-        {"case_id": "ext_1_clean_high_amount", "claim": replace(base, amount_inr=95_000), "label": "APPROVE", "description": "High value clean claim within limit (INR 95,000)"},
-        {"case_id": "ext_2_policy_not_covered", "claim": replace(base, hospitalization_covered=False), "label": "REJECT", "description": "Hospitalization not covered"},
-        {"case_id": "ext_3_policy_waiting_period", "claim": replace(base, waiting_period_satisfied=False), "label": "REJECT", "description": "Waiting period unsatisfied"},
-        {"case_id": "ext_4_policy_limit_exceeded", "claim": replace(base, amount_inr=120_000), "label": "REJECT", "description": "Claim amount exceeds policy limit (INR 120,000)"},
-        {"case_id": "ext_5_evidence_missing_docs", "claim": replace(base, documents_available=False), "label": "REVIEW", "description": "Required documents unavailable"},
-        {"case_id": "ext_6_evidence_invoice_mismatch", "claim": replace(base, invoice_matches=False), "label": "REVIEW", "description": "Invoice does not match records"},
-        {"case_id": "ext_7_risk_duplicate_claim", "claim": replace(base, duplicate_claim=True), "label": "REVIEW", "description": "Duplicate claim flagged in risk screening"},
-        {"case_id": "ext_8_risk_provider_flagged", "claim": replace(base, provider_flagged=True), "label": "REVIEW", "description": "Healthcare provider flagged in screening"},
-        {"case_id": "ext_9_compliance_missing_consent", "claim": replace(base, consent_available=False), "label": "REVIEW", "description": "Patient consent unavailable"},
-    ]
-
-
 def evaluate_arms(claim: InsuranceClaim, data: dict) -> dict[str, str]:
     """Evaluate methods A through F on the exact same agent outputs and facts."""
     # Method A: Majority only
@@ -146,8 +124,7 @@ def evaluate_arms(claim: InsuranceClaim, data: dict) -> dict[str, str]:
     dec_a = majority(raw_outputs)
 
     # Oracle rule outcome for gate
-    local_rules = [rule_decision(r, claim.facts(r)) for r in ROLES]
-    oracle_required = "REJECT" if "REJECT" in local_rules else "REVIEW" if "REVIEW" in local_rules else "APPROVE"
+    oracle_required = evaluate_rule_oracle(claim)
 
     # Method B: Majority + Gate
     dec_b = dec_a if dec_a == oracle_required else "REVIEW"
@@ -201,62 +178,6 @@ def evaluate_arms(claim: InsuranceClaim, data: dict) -> dict[str, str]:
         "G": dec_g,
         "H": dec_h,
         "I": dec_i,
-    }
-
-
-def calculate_metrics(predictions: list[str], labels: list[str]) -> dict:
-    """Compute complete metric suite separating decided cases from review/abstention."""
-    n = len(predictions)
-    if n == 0:
-        return {}
-
-    correct_all = sum(p == l for p, l in zip(predictions, labels))
-    decided = [(p, l) for p, l in zip(predictions, labels) if p in ("APPROVE", "REJECT")]
-    correct_decided = sum(p == l for p, l in decided)
-    strict_correct = sum(p == l and p != "REVIEW" for p, l in zip(predictions, labels))
-
-    unsafe_approvals = sum(p == "APPROVE" and l != "APPROVE" for p, l in zip(predictions, labels))
-    incorrect_rejections = sum(p == "REJECT" and l != "REJECT" for p, l in zip(predictions, labels))
-    false_reviews = sum(p == "REVIEW" and l in ("APPROVE", "REJECT") for p, l in zip(predictions, labels))
-    required_reviews = sum(p == "REVIEW" and l == "REVIEW" for p, l in zip(predictions, labels))
-
-    confusion = {f"{l}->{p}": 0 for l in DECISIONS for p in DECISIONS}
-    for p, l in zip(predictions, labels):
-        confusion[f"{l}->{p}"] += 1
-
-    return {
-        "total_cases": n,
-        "reported_accuracy": correct_all / n,
-        "reported_correct": correct_all,
-        "decided_count": len(decided),
-        "coverage": len(decided) / n,
-        "decided_accuracy": (correct_decided / len(decided)) if decided else None,
-        "strict_accuracy": strict_correct / n,
-        "strict_correct": strict_correct,
-        "unsafe_approvals": unsafe_approvals,
-        "unsafe_approval_rate": unsafe_approvals / n,
-        "incorrect_rejections": incorrect_rejections,
-        "incorrect_rejection_rate": incorrect_rejections / n,
-        "false_reviews": false_reviews,
-        "false_review_rate": false_reviews / n,
-        "required_reviews": required_reviews,
-        "required_review_rate": required_reviews / n,
-        "additional_deferrals": false_reviews,
-        "additional_deferral_rate": false_reviews / n,
-        "confusion_matrix": confusion,
-    }
-
-
-def calculate_paired_disagreements(preds_1: list[str], preds_2: list[str]) -> dict:
-    """Quantify paired decision divergence between two comparison arms."""
-    total = len(preds_1)
-    disagreements = sum(p1 != p2 for p1, p2 in zip(preds_1, preds_2))
-    transitions = Counter(f"{p1}->{p2}" for p1, p2 in zip(preds_1, preds_2) if p1 != p2)
-    return {
-        "total_comparisons": total,
-        "disagreement_count": disagreements,
-        "disagreement_rate": (disagreements / total) if total else 0.0,
-        "transitions": dict(transitions),
     }
 
 
