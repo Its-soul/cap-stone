@@ -1,0 +1,29 @@
+{
+  "schema_version": "blind-external-v1",
+  "status": "PENDING_TEAMMATE_SUBMISSION",
+  "instructions": "Collect ~20 teammate-authored synthetic claims written blind to system outputs, baseline code, and frozen test generator rules. Populate `cases` with objects matching `case_schema`, set `authored_blind_to_system_outputs` to true per claim, and update `status` to `READY` before Phase 6 locks the blind split hash. Never fabricate teammate authorship.",
+  "required_case_count_target": 20,
+  "case_schema": {
+    "required_top_level_fields": [
+      "case_id",
+      "author",
+      "authored_blind_to_system_outputs",
+      "review_status",
+      "claim"
+    ],
+    "required_claim_fields": [
+      "claim_id",
+      "amount_inr",
+      "coverage_limit_inr",
+      "hospitalization_covered",
+      "waiting_period_satisfied",
+      "documents_available",
+      "invoice_matches",
+      "duplicate_claim",
+      "provider_flagged",
+      "identity_verified",
+      "consent_available"
+    ]
+  },
+  "cases": []
+}
