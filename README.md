@@ -1,158 +1,161 @@
-# Verifiable Multi-Agent Fault-Tolerant Adjudication System with Cryptographic Causal Provenance
+# Verifiable Multi-Agent Adjudication with Cryptographic Provenance
 
-An academic research system combining a **deterministic versioned certificate engine and SHA-256 provenance DAG** with **advisory machine learning models** for fault-tolerant multi-agent decision workflows.
-
----
-
-## START HERE
-
-- **Live Browser Demonstration:** Run `python scripts/run_claim_demo.py` from the repository root and open `http://127.0.0.1:8000/` (frontend source: [demo/index.html](demo/index.html)).
-- **Core Implementation:** [src/cert_recovery/engine.py](src/cert_recovery/engine.py) (DAG & certificate recovery) and [src/cert_recovery/adjudication/workflow.py](src/cert_recovery/adjudication/workflow.py) (multi-agent adjudication).
-- **Offline Validation Notebook:** [notebooks/01_Adjudication_Demo.ipynb](notebooks/01_Adjudication_Demo.ipynb).
-- **Candidate V2 Dependency Model Walkthrough:** [notebooks/03_Dependency_Model_V2.ipynb](notebooks/03_Dependency_Model_V2.ipynb).
-- **Verified Empirical Results:** [docs/EVALUATION.md](docs/EVALUATION.md) and [results/](results/).
+**`certificate-recovery`** is a Python verification kernel for fault-tolerant multi-agent decision workflows. It combines deterministic rule gating, independent verification against source data, Ed25519-signed causal audit logs, and dependency-aware selective recovery so updated inputs recompute only affected steps.
 
 ---
 
-## Problem Statement and Core Contribution
+## Why This Exists
 
-Multi-agent LLM decision pipelines are vulnerable to silent hallucinations, cascading corruption across agents, and expensive full-pipeline restarts whenever a single source document changes.
+Multi-agent LLM and ML pipelines commonly fail in high-stakes workflows for three reasons:
 
-This project enforces a **strict boundary between untrusted advisory AI/ML models and authoritative deterministic verification**:
+- **Stale decisions:** When a single input record changes later, cached approvals or downstream summaries from an earlier version can be replayed against outdated facts.
+- **Unverified agent outputs:** Free-form model outputs, crashed calls, or majority voting across unrelated checks can let one error or faulty agent approve a request that violates a core rule.
+- **Costly full restarts:** Fixing one changed field normally forces the entire pipeline to re-run from scratch, wasting API calls and compute.
 
-1. **Disjoint Specialist Composition (`composition-v1`):** `policy`, `evidence`, `risk`, and `compliance` specialists evaluate domain-specific obligations (`coverage-v1`, `documents-v1`, `fraud-screen-v1`, `identity-consent-v1`) rather than casting interchangeable whole-claim votes.
-2. **Non-Overridable Mandatory Safety Rules:** Deterministic rule gates and typed schema validation intercept malformed, conflicting, or policy-ineligible proposals (`0` unsafe approvals across verified ablation suites). Confidence scores have zero certificate or payout authority.
-3. **SHA-256 Causal Provenance & Selective Recovery:** Every artifact and certificate transition is hash-chained in `EventDAG` (`src/cert_recovery/adjudication/ledger.py`). When an evidence fact changes, only affected downstream nodes are invalidated and recomputed while unaffected specialist certificates remain valid at version `v1`.
-4. **Advisory Dependency Prediction:** A fine-tuned `DeBERTa-v3-small` model (`Candidate V2`) predicts candidate dependency edges without modifying authoritative DAG edges or bypassing verification.
-
----
-
-## System Workflow
-
-```text
-Claim Evidence (10 domain facts)
-      |
-      +--> Policy      (coverage, waiting period, limit)  --+
-      +--> Evidence    (documents available, invoice match) |
-      +--> Risk        (duplicate claim, provider flag)     +--> Schema & Rule Validation
-      +--> Compliance  (identity verified, consent)       --+
-                                                            |
-                                  +-------------------------+
-                                  v
-            Specialist Composition & Mandatory Rule Gate
-             - Policy violated        -> REJECT
-             - Any failure/uncertain  -> REVIEW
-             - All checks satisfied   -> APPROVE
-                                  |
-                                  v
-            Versioned Certificate & SHA-256 EventDAG
-             - Edit 1 fact -> Invalidate affected branch only
-             - Reuse unaffected v1 certificates -> Update decision
-```
-
-### Selective Recovery Example
-
-1. A hospitalization claim is submitted with `documents_available = No` (`policy`, `risk`, and `compliance` pass).
-2. All four specialists run (`v1`), and the system returns **REVIEW** (required documents missing).
-3. The claimant supplies the missing document (`documents_available` changes `No -> Yes`).
-4. `CertificateSystem` invalidates only the `evidence` branch: `evidence` reruns (`Reran`), while `policy`, `risk`, and `compliance` remain **Reused** at `v1`, issuing round certificate `v2` and updating the decision to **APPROVE**.
+This project draws a strict boundary between **untrusted model proposals** and **authoritative host verification**. AI/ML backends only propose structured role assessments, while deterministic host code validates schemas, enforces domain rules, signs provenance records, and manages incremental updates.
 
 ---
 
-## Quickstart
+## Key Features
 
-### Installation
-
-Requires **Python 3.11+**. The core engine requires only `PyYAML`.
-
-```sh
-python -m venv .venv
-# Windows PowerShell: .\.venv\Scripts\Activate.ps1
-# macOS/Linux:        source .venv/bin/activate
-python -m pip install -e ".[remote,test]"
-```
-
-Optional ML extras (`laptop`, `nvidia`) are declared in [pyproject.toml](pyproject.toml) and should be kept in a separate environment from `remote` due to `huggingface-hub` version constraints (see [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md)).
-
-### Run the Demonstration
-
-```sh
-python scripts/run_claim_demo.py
-```
-
-Open `http://127.0.0.1:8000/`. Use **Run claim** to evaluate a case, edit any claim field and click **Apply changes** to observe selective recomputation and audit events, or click **New claim** to reset. Pass `--port <PORT>` to change the port. The optional V2 dependency panel loads a local `CERT_RECOVERY_V2_RUN` bundle when launched from an environment with `torch` and `transformers`.
-
-### Run Tests and Offline Validation
-
-```sh
-# Complete offline test suite
-python -m pytest tests -q
-
-# End-to-end deterministic prototype, tamper detection, and recovery demo
-python scripts/run_insurance_prototype.py
-
-# Validate public configs, pins, documentation links, and notebook syntax
-python scripts/validate_preparation.py
-python scripts/validate_notebooks.py
-```
+- **Dependency-aware certificate invalidation and targeted recovery:** `CertificateSystem` tracks exact `(artifact_id, version, content_hash)` bindings. Editing a single fact invalidates only dependent branches while keeping unaffected specialist certificates valid.
+- **Independent verification & fault-tolerant adjudication:** Four role-isolated specialists (`policy`, `evidence`, `risk`, `compliance`) evaluate separate obligations, and `independent_verifier` re-derives every decision directly from stored source ancestry before commit. Malformed, timed-out, stale, or rule-conflicting outputs fall back safely to `REVIEW` instead of `APPROVE`.
+- **Ed25519 signed causal provenance & tamper detection:** Every input mutation, specialist output, recovery event, certificate state transition, and final decision is stored in a SHA-256 content-addressed `EventDAG` signed with Ed25519 keys alongside a `checkpoint.json` anchor.
+- **Benchmark evaluation suite & offline reproducibility:** Includes the curated synthetic benchmark under [datasets/benchmark_v1/](datasets/benchmark_v1/), comparative baselines (`FULL_DET`, voting, policy-veto, single-agent, and LLM-as-a-judge harnesses), and `run_all.py` for deterministic offline regeneration.
 
 ---
 
 ## Repository Structure
 
 ```text
-certificate-recovery/
-|-- README.md
-|-- pyproject.toml
-|-- requirements.txt
-|-- requirements-colab.txt
-|-- .env.example
-|-- .gitignore
-|-- run_baseline.py              # Optional remote NLI smoke runner
-|-- remote_model_client.py       # Public HF Space adapter client
-|-- semantic_advice.py           # Version/hash-bound advisory NLI helper
-|-- baseline_tests.json          # Six diagnostic NLI smoke fixtures
-|-- config/                      # System, pinned model, and benchmark configs
-|-- data/examples/               # Reference JSONL schema examples
-|-- demo/                        # Interactive local browser demonstration (index.html)
-|-- docs/                        # Consolidated technical documentation
-|-- notebooks/                   # Five canonical research and demo notebooks
-|-- research_benchmark/          # 12-model registry, loaders, trainers, metrics, plots
-|-- scripts/                     # CLI demos, ablation runners, report builders, validators
-|-- src/cert_recovery/           # Core engine, crypto DAG, adjudication, and ML pipelines
-|-- tests/                       # Unit, adjudication, integration, ML, and remote tests
-|-- results/                     # Ignored generated metrics, reports, and figures
-`-- _private/                    # Ignored frozen checkpoints, logs, and internal archive
+.
+|-- config/                         # Model pins and evaluation settings
+|-- data/examples/                  # Sample JSONL schemas for dependency pairs and workflows
+|-- datasets/
+|   |-- benchmark_v1/               # Synthetic claim splits, update paths, and SHA-256 manifest
+|   `-- blind_external_template.json
+|-- docs/                           # Architecture, decision spec, evaluation protocol, and model notes
+|-- results/                        # Local evaluation and benchmark outputs (gitignored working dir)
+|-- scripts/                        # CLI scripts for tamper tests, replay tests, audits, and benchmarks
+|-- src/cert_recovery/              # Core DAG certificate engine, adjudication workflow, and oracle modules
+|-- tests/                          # Unit, adjudication, core, ML pipeline, and remote contract suites
+|-- pyproject.toml                  # Package metadata and optional dependency extras
+`-- run_all.py                      # Offline reproducibility entry point
 ```
 
 ---
 
-## Verified Results Summary
+## Quick Start & Setup
 
-*All offline prototype benchmarks use deterministic rule simulators or synthetic fixtures unless explicitly noted as local checkpoint or ONNX inference.*
+Requires **Python 3.11+**. The core engine requires only `PyYAML` and `cryptography`.
 
-- **Factorial Adjudication Ablation (`N = 150`, seeds `42, 101, 2024`):** Enabling the deterministic rule gate improved 3-class accuracy by **+48.17 pp** on average across matched configurations (`Arm E`: 72.0% vs. `Arm D`: 22.7%) and eliminated unsafe approvals (`0` across all gated arms vs. `107–115` without gating).
-- **Specialist Composition (`composition-v1`):** Replacing interchangeable whole-claim votes with disjoint specialist obligations eliminated the 42 false `REVIEW` deferrals observed under legacy voting while preserving `0` unsafe approvals.
-- **Selective Recovery Benchmark (`results/recovery/`):** Single-branch updates rebuild `1` specialist while preserving `3` at `v1` (`4.0` vs. `7.0` configured cost units). Under ~0.01ms in-memory mock agents, graph hashing limits wall-clock speedup to `~1.12x–1.27x` (and can be slower under noise); meaningful wall-clock savings appear when avoiding heavy LLM inference calls (~37s/call on local CPU for INT8 `Qwen2.5-0.5B`).
-- **Candidate V2 Dependency Model (`DeBERTa-v3-small`, $\tau = 0.20$):** Achieved **87.5%** validation accuracy (`0.873` macro-F1, `n=64`), **91.7%** final held-out accuracy (`0.916` macro-F1, `0` false negatives, `n=96`), and **82.8%** stress accuracy (`n=384`), while exposing a semantic-overlap confound (`16/16` failures on `nli_context` independent rows) that motivated the **unexecuted** Candidate V3 contrast formulation.
-- **Compliance Model Adapter:** Schema enforcement and `CONFIRMED_FAILURE` weight zeroing were verified across 11 cases via `mock_compliance_backend` (`live_backend_executed: false`); prompt calibration on `Qwen2.5-0.5B-Instruct` ONNX was evaluated separately on 4 scenarios.
+### 1. Clone and install
+
+```sh
+git clone https://github.com/Its-soul/cap-stone.git
+cd cap-stone
+python -m venv .venv
+```
+
+Activate the virtual environment and install the package with test dependencies:
+
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[test]"
+```
+
+```sh
+# macOS / Linux
+source .venv/bin/activate
+python -m pip install -e ".[test]"
+```
+
+Optional extras (`remote`, `laptop`, `nvidia`) are defined in [pyproject.toml](pyproject.toml) if you run optional Hugging Face Space or local ML model scripts.
+
+### 2. Run the full offline test suite
+
+```sh
+pytest tests -q
+```
+
+### 3. Run offline reproducibility & verification scripts
+
+```sh
+# Regenerate seeded adjudication tables and verify saved benchmark artifacts offline
+python run_all.py --output-dir results/verify_tmp
+
+# Verify stale-certificate replay rejection across v1 -> v2 claim updates
+python scripts/run_stale_certificate_experiment.py --output-dir results/replay_tmp
+
+# Generate signed EventDAG logs, run tamper/rollback tests, and inspect a persisted run
+python scripts/run_provenance_tamper_experiment.py --output-dir results/provenance_tmp
+python scripts/verify_provenance.py \
+  --events results/provenance_tmp/persisted_run/events.jsonl \
+  --public-key results/provenance_tmp/persisted_run/public_key.hex \
+  --checkpoint results/provenance_tmp/persisted_run/checkpoint.json \
+  --query-artifact facts:evidence@1
+
+# Run the full offline synthetic benchmark suite against the hash-verified manifest
+python scripts/run_benchmark_evaluation.py \
+  --manifest datasets/benchmark_v1/frozen_evaluation_manifest.json \
+  --results-dir results/benchmark_tmp \
+  --run-offline
+```
+
+For opt-in live model runs (for example via Groq), copy `.env.example` to `.env`, set `GROQ_API_KEY`, and pass `--run-live` to [scripts/run_benchmark_evaluation.py](scripts/run_benchmark_evaluation.py) or configure [scripts/run_pilot_workflow.py](scripts/run_pilot_workflow.py).
 
 ---
 
-## Known Limitations
+## How It Works
 
-- **Simulation vs. Live Multi-LLM Inference:** End-to-end adjudication suites rely on deterministic `RuleAgent` simulators and mock compliance outputs rather than live multi-GPU LLM execution.
-- **Uncalibrated Confidence:** Agent confidence values are authored or uncalibrated; probability calibration (Platt/temperature scaling) remains future work.
-- **Cryptographic Trust Boundary:** `EventDAG` uses unkeyed SHA-256 hashes; detecting history truncation requires an independently retained checkpoint anchor, without asymmetric signatures or formal Byzantine quorum protocols.
-- **40% Adversarial Claim Unproven:** Synthetic Bernoulli fault-injection tests at requested rates up to 40% illustrate rule containment on small authored suites and do **not** establish general Byzantine fault tolerance.
-- **Candidate V3 Prepared Only:** V3 datasets and launch guards exist in `src/cert_recovery/v3_preparation.py` and `scripts/run_candidate_v3.py`, but remain intentionally unexecuted pending external review.
+```text
+  Claim Input (10 typed fields across 4 role slices)
+         |
+         +--> [policy / evidence / risk / compliance]  (untrusted specialist proposers)
+         |
+         v
+  Schema & Source-Binding Validation
+         |   (missing / malformed / stale / conflicting output -> UNCERTAIN -> REVIEW)
+         v
+  Mandatory Rule Composition & Independent Verifier
+         |   (policy failed -> REJECT | procedural gap -> REVIEW | all valid -> APPROVE)
+         v
+  Ed25519 Signed EventDAG + Checkpoint Anchor
+         |   (tamper-evident causal log + certificate issued on verified bindings)
+         v
+  Source Fact Update (v1 -> v2)
+         |   (invalidate affected branch only -> re-run dirty specialist -> reuse valid v1 certs)
+         v
+  Updated Certified Decision
+```
+
+1. **Input slicing:** A claim is split into disjoint role inputs so each specialist sees only the fields for its contract (`coverage-v1`, `documents-v1`, `fraud-screen-v1`, `identity-consent-v1`).
+2. **Adjudication & validation:** Specialists return structured JSON proposals. Host code checks schemas, copied evidence fields, rule citations, and version hashes, mapping any fault to `UNCERTAIN`.
+3. **Independent verification:** Before committing a decision, `independent_verifier` re-computes domain obligations directly from source artifacts in the DAG.
+4. **Signed provenance:** Every step is appended to an Ed25519-signed `EventDAG` log paired with an external `checkpoint.json` to detect tampering, reordering, cross-run splicing, and history truncation.
+5. **Selective recovery:** When a claim field updates from `v1` to `v2`, `CertificateSystem` invalidates downstream nodes on that branch, re-runs only invalidated specialists, reuses untouched `v1` outputs, and issues an updated certificate.
 
 ---
 
-## Documentation
+## Limitations & Scope
+
+- **Synthetic benchmark domain:** All claim schemas and domain predicates represent a synthetic healthcare adjudication specification rather than live production insurance or clinical data.
+- **Offline defaults vs. opt-in live LLM runs:** The test suite and offline scripts use deterministic rule/contract backends so everything runs with zero network access or API cost. Live LLM evaluation requires explicit opt-in flags and an API key.
+- **CPU-only local execution:** Core tests, cryptographic provenance checks, and benchmark harnesses run locally on CPU without requiring a GPU.
+- **Single-writer provenance model:** Ed25519 signatures verify possession of the local writer's signing key, and detecting tail truncation requires supplying an independently retained `checkpoint.json` file (this is not a distributed Byzantine consensus system).
+- **Structural vs. free-text checks:** Host validation enforces exact structured decisions, evidence copies, rule references, and input hashes; verifying natural-language faithfulness inside free-text `reasoning_summary` strings remains outside automated checks.
+
+---
+
+## Documentation & Project Info
 
 - [Architecture & Data Contracts](docs/ARCHITECTURE.md)
-- [Research Methodology & Dependency Target](docs/METHODOLOGY.md)
-- [Models, Baselines & Execution Tiers](docs/MODELS.md)
-- [Evaluation & Reconciled Findings](docs/EVALUATION.md)
-- [Reproducibility & Verification Guide](docs/REPRODUCIBILITY.md)
+- [Frozen Decision Specification](docs/FROZEN_DECISION_SPEC_V1.md)
+- [Evaluation Protocol](docs/FROZEN_EVALUATION_PROTOCOL_V1.md)
+- [Evaluation Summary](docs/EVALUATION.md)
+- [Methodology](docs/METHODOLOGY.md)
+- [Models & Baselines](docs/MODELS.md)
+- [Reproducibility Guide](docs/REPRODUCIBILITY.md)
+
+**Package:** `certificate-recovery` (`0.1.0`) — see [pyproject.toml](pyproject.toml) for dependencies (`PyYAML`, `cryptography`, Python `>=3.11`). **Author:** Vaibhav Yadav. No separate repository license file is currently included.
