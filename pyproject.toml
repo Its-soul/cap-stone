@@ -7,7 +7,10 @@ name = "certificate-recovery"
 version = "0.1.0"
 description = "Deterministic foundation for dependency-aware certificate invalidation and recovery"
 requires-python = ">=3.11"
-dependencies = ["PyYAML>=6.0,<7"]
+dependencies = [
+    "PyYAML>=6.0,<7",
+    "cryptography>=42.0",
+]
 
 [project.optional-dependencies]
 test = ["pytest>=8,<10"]

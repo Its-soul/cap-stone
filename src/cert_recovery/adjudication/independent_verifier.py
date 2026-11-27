@@ -214,7 +214,8 @@ def verify_composition_independently(
 
         # Verify EventDAG integrity before looking up provenance commitments
         exported_events = ledger.export()
-        if not EventDAG.verify(exported_events, ledger.checkpoint()):
+        pub_key = ledger.signer.public_key if getattr(ledger, "signer", None) is not None else None
+        if not EventDAG.verify(exported_events, ledger.checkpoint(), public_key=pub_key):
             return VerificationResult(False, "EventDAG integrity verification failed")
         events_by_hash = {e["event_hash"]: e for e in exported_events}
 
@@ -336,7 +337,8 @@ def verify_composition_independently(
         comp_event = events_by_hash[comp_prov_ref]
         if comp_event.get("event_type") != "specialist_composition":
             return VerificationResult(False, f"Unexpected composition event type: {comp_event.get('event_type')}")
-        if comp_event.get("parents") != sorted(set(agent_prov_refs)):
+        comp_parents = comp_event.get("parent_hashes") if "parent_hashes" in comp_event else comp_event.get("parents")
+        if comp_parents != sorted(set(agent_prov_refs)):
             return VerificationResult(False, "Composition event parent provenance mismatch")
         expected_event_payload = {k: v for k, v in subject_payload.items() if k != "provenance_reference"}
         if canonical_json(comp_event.get("payload")) != canonical_json(expected_event_payload):

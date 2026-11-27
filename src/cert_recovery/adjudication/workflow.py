@@ -1,6 +1,7 @@
 """Integrate adjudication with the unchanged certificate/recovery facade."""
 import copy
 from dataclasses import asdict
+from pathlib import Path
 
 from ..crypto import canonical_json
 from ..engine import CertificateSystem
@@ -16,7 +17,7 @@ from .composition import (
 from .consensus import ConfidenceWeightedConsensus, Vote, assess, majority
 from .domain import FAULT_MODES, PROMPTS, ROLES, RULES, InsuranceClaim, RuleAgent, rule_decision, simulate_fault
 from .independent_verifier import verify_composition_independently
-from .ledger import EventDAG
+from .ledger import Ed25519EventSigner, EventDAG
 
 
 class InsuranceAdjudication:
@@ -35,6 +36,9 @@ class InsuranceAdjudication:
         faults=None,
         mode: str = "legacy",
         precedence: str = PRECEDENCE_SUBSTANTIVE_EXCLUSION,
+        run_id: str | None = None,
+        signer: Ed25519EventSigner | None = None,
+        provenance_dir: str | Path | None = None,
     ):
         if mode not in ("legacy", "composition"):
             raise ValueError(f"Unknown adjudication mode: {mode}")
@@ -43,7 +47,16 @@ class InsuranceAdjudication:
         self.mode = mode
         self.precedence = precedence
         self.system = CertificateSystem()
-        self.ledger = EventDAG()
+        if provenance_dir is not None:
+            resolved_dir = Path(provenance_dir)
+            resolved_dir.mkdir(parents=True, exist_ok=True)
+            active_signer = signer or Ed25519EventSigner.generate()
+            active_signer.write_public_key_hex(resolved_dir / "public_key.hex")
+            self.ledger = EventDAG.open_persisted(resolved_dir, run_id=run_id, signer=active_signer)
+        elif signer is not None:
+            self.ledger = EventDAG(run_id=run_id, signer=signer)
+        else:
+            self.ledger = EventDAG()
         self.claim = claim
         self.backends = {role: RuleAgent() for role in ROLES}
         if backends:
@@ -89,35 +102,51 @@ class InsuranceAdjudication:
     def _binding(artifact):
         return {**artifact.ref.to_dict(), "content_hash": artifact.content_hash}
 
+    def _next_version(self, artifact_id: str) -> int:
+        try:
+            return self.system.latest(artifact_id).ref.version + 1
+        except KeyError:
+            return 1
+
     def _execute(self, role, source):
         self.executions[role] += 1
         binding = self._binding(source)
         facts = source.payload["facts"]
         source_event = self._record_source(source)
+        agent_id = role + "_agent"
+        agent_ver = self._next_version(agent_id)
+        art_ref = f"{agent_id}@{agent_ver}"
+        art_ver = {"artifact_id": agent_id, "version": agent_ver}
         parents = [source_event] + ([self._recovery_event] if self._recovery_event else [])
         access = self.ledger.append("evidence_access", {"binding": binding, "facts": facts,
-                                                     "rule": RULES[role][0]}, parents, role + "_agent")
+                                                     "rule": RULES[role][0]}, parents, agent_id,
+                                    artifact_ref=art_ref, artifact_version=art_ver)
         execution = self.ledger.append("agent_execution", {"prompt": PROMPTS[role], "input_reference": binding},
-                                       (access,), role + "_agent")
+                                       (access,), agent_id,
+                                       artifact_ref=art_ref, artifact_version=art_ver)
         try:
             raw = self.backends[role].execute(role, PROMPTS[role], copy.deepcopy(facts), copy.deepcopy(binding))
-            raw = simulate_fault(raw, self.faults.get(role + "_agent"))
+            raw = simulate_fault(raw, self.faults.get(agent_id))
             canonical_json(raw)  # Reject non-JSON / NaN before it can enter provenance.
         except Exception as error:
             raw = {"execution_error": type(error).__name__}
-        output_event = self.ledger.append("agent_output", raw, (execution,), role + "_agent")
+        output_event = self.ledger.append("agent_output", raw, (execution,), agent_id,
+                                          artifact_ref=art_ref, artifact_version=art_ver)
         assessment = assess(raw, role, facts, binding)
-        validation = self.ledger.append("validation", asdict(assessment), (output_event, access), role + "_agent")
-        fault = self.ledger.append("fault_assessment", asdict(assessment), (validation,), role + "_agent")
+        validation = self.ledger.append("validation", asdict(assessment), (output_event, access), agent_id,
+                                        artifact_ref=art_ref, artifact_version=art_ver)
+        fault = self.ledger.append("fault_assessment", asdict(assessment), (validation,), agent_id,
+                                   artifact_ref=art_ref, artifact_version=art_ver)
         backend_id = raw.get("backend", "synthetic-rule-agent-v1") if isinstance(raw, dict) else "synthetic-rule-agent-v1"
         spec_assessment = assess_specialist(raw, role, facts, binding, backend_id=backend_id)
         if self.mode == "composition":
-            prov_ref = self.ledger.append("specialist_assessment", asdict(spec_assessment), (fault,), role + "_agent")
+            prov_ref = self.ledger.append("specialist_assessment", asdict(spec_assessment), (fault,), agent_id,
+                                          artifact_ref=art_ref, artifact_version=art_ver)
             impact = "specialist obligation assessment"
         else:
             prov_ref = fault
             impact = "validated weighted role vote"
-        return {"agent_id": role + "_agent", "role": role, "raw_output": raw,
+        return {"agent_id": agent_id, "role": role, "raw_output": raw,
                 "assessment": asdict(assessment), "specialist_assessment": asdict(spec_assessment),
                 "input_reference": binding, "provenance_reference": prov_ref,
                 "node_type": "agent-assessment", "rule_references": [RULES[role][0]],
@@ -125,8 +154,12 @@ class InsuranceAdjudication:
 
     def _record_source(self, source):
         if source.content_hash not in self._source_events:
-            self._source_events[source.content_hash] = self.ledger.append("input_received", {
-                "binding": self._binding(source), "payload": source.payload})
+            self._source_events[source.content_hash] = self.ledger.append(
+                "input_received",
+                {"binding": self._binding(source), "payload": source.payload},
+                artifact_ref=str(source.ref),
+                artifact_version=source.ref.to_dict(),
+            )
         return self._source_events[source.content_hash]
 
     def _compute_round(self, agents):
@@ -154,10 +187,13 @@ class InsuranceAdjudication:
 
     def _round(self, agents):
         result = self._compute_round(agents)
+        round_ver = self._next_version("round")
         parents = []
         for node, vote in zip(agents, result["votes"]):
-            parents.append(self.ledger.append("vote", vote, (node.payload["provenance_reference"],), vote["agent_id"]))
-        result["provenance_reference"] = self.ledger.append("consensus", result, parents)
+            parents.append(self.ledger.append("vote", vote, (node.payload["provenance_reference"],), vote["agent_id"],
+                                              artifact_ref=f"round@{round_ver}", artifact_version={"artifact_id": "round", "version": round_ver}))
+        result["provenance_reference"] = self.ledger.append("consensus", result, parents,
+                                                            artifact_ref=f"round@{round_ver}", artifact_version={"artifact_id": "round", "version": round_ver})
         return result
 
     def _compute_composition_round(self, agents):
@@ -186,8 +222,15 @@ class InsuranceAdjudication:
 
     def _composition_round(self, agents):
         result = self._compute_composition_round(agents)
+        round_ver = self._next_version("round")
         parents = [node.payload["provenance_reference"] for node in agents]
-        result["provenance_reference"] = self.ledger.append("specialist_composition", result, parents)
+        result["provenance_reference"] = self.ledger.append(
+            "specialist_composition",
+            result,
+            parents,
+            artifact_ref=f"round@{round_ver}",
+            artifact_version={"artifact_id": "round", "version": round_ver},
+        )
         return result
 
     def _verify_composition_round(self, subject, ancestry):
@@ -200,9 +243,11 @@ class InsuranceAdjudication:
                 raise ValueError("Round must bind exactly four distinct roles in declared order")
             actual = {k: v for k, v in subject.payload.items() if k != "provenance_reference"}
             expected = self._compute_round(agents)
-            passed = actual == expected and self.ledger.verify(self.ledger.export(), self.ledger.checkpoint())
+            pub_key = self.ledger.signer.public_key if self.ledger.signer else None
+            passed = actual == expected and self.ledger.verify(self.ledger.export(), self.ledger.checkpoint(), public_key=pub_key)
             events = {e["event_hash"]: e for e in self.ledger.export()}
             consensus_event = events[subject.payload["provenance_reference"]]
+            consensus_parents = consensus_event.get("parent_hashes", consensus_event["parents"])
             passed = passed and consensus_event["event_type"] == "consensus" and consensus_event["payload"] == actual
             vote_events = []
             for role, node, vote in zip(ROLES, agents, expected["votes"]):
@@ -217,12 +262,12 @@ class InsuranceAdjudication:
                 passed = passed and any(e["event_type"] == "agent_output" and e["agent_id"] == role + "_agent"
                                         and e["payload"] == node.payload["raw_output"] for e in trace)
                 matches = [e["event_hash"] for e in events.values() if e["event_type"] == "vote"
-                           and e["payload"] == vote and e["parents"] == [node.payload["provenance_reference"]]
-                           and e["event_hash"] in consensus_event["parents"]]
+                           and e["payload"] == vote and e.get("parent_hashes", e["parents"]) == [node.payload["provenance_reference"]]
+                           and e["event_hash"] in consensus_parents]
                 if len(matches) != 1:
                     raise ValueError("Vote event binding mismatch")
                 vote_events.extend(matches)
-            passed = passed and sorted(vote_events) == consensus_event["parents"]
+            passed = passed and sorted(vote_events) == consensus_parents
             return VerificationResult(passed, "Recomputed votes, assessments, mandatory gate and event hashes")
         except (KeyError, TypeError, ValueError):
             return VerificationResult(False, "Malformed round")
@@ -245,7 +290,14 @@ class InsuranceAdjudication:
         else:
             payload = {"decision": result["decision"], "consensus": result["consensus"], "gate": result["gate"],
                        "certificate": self._binding(self.system.artifact(certificate)), "node_type": "final-decision"}
-        payload["provenance_reference"] = self.ledger.append("final_decision", payload, (result["provenance_reference"],))
+        final_ver = self._next_version("final")
+        payload["provenance_reference"] = self.ledger.append(
+            "final_decision",
+            payload,
+            (result["provenance_reference"],),
+            artifact_ref=f"final@{final_ver}",
+            artifact_version={"artifact_id": "final", "version": final_ver},
+        )
         return payload
 
     def _rebuild_final(self, previous, supports):
@@ -312,6 +364,9 @@ class SpecialistCompositionAdjudication(InsuranceAdjudication):
         backends=None,
         faults=None,
         precedence: str = PRECEDENCE_SUBSTANTIVE_EXCLUSION,
+        run_id: str | None = None,
+        signer: Ed25519EventSigner | None = None,
+        provenance_dir: str | Path | None = None,
     ):
         super().__init__(
             claim,
@@ -319,4 +374,7 @@ class SpecialistCompositionAdjudication(InsuranceAdjudication):
             faults=faults,
             mode="composition",
             precedence=precedence,
+            run_id=run_id,
+            signer=signer,
+            provenance_dir=provenance_dir,
         )

@@ -437,7 +437,8 @@ def verify_specialist_composition(
             return VerificationResult(False, "Composition contract version mismatch")
 
         # Verify EventDAG
-        if not ledger.verify(ledger.export(), ledger.checkpoint()):
+        pub_key = ledger.signer.public_key if getattr(ledger, "signer", None) is not None else None
+        if not ledger.verify(ledger.export(), ledger.checkpoint(), public_key=pub_key):
             return VerificationResult(False, "EventDAG integrity verification failed")
 
         prov_ref = subject_payload.get("provenance_reference")
@@ -450,7 +451,8 @@ def verify_specialist_composition(
 
         # Verify parent references link to each agent's provenance reference
         agent_prov_refs = sorted(set([node.payload["provenance_reference"] for node in agent_artifacts]))
-        if comp_event["parents"] != agent_prov_refs:
+        comp_parents = comp_event.get("parent_hashes") if "parent_hashes" in comp_event else comp_event.get("parents")
+        if comp_parents != agent_prov_refs:
             return VerificationResult(False, "Specialist composition parent provenance binding mismatch")
 
         return VerificationResult(True, "Recomputed assessments, truth table composition, and EventDAG verified")
