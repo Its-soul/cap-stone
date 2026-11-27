@@ -19,7 +19,7 @@ SRC_DIR = REPO_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from cert_recovery.adjudication.phase4_runner import execute_phase4_suite  # noqa: E402
+from cert_recovery.adjudication.pilot_runner import execute_phase4_suite  # noqa: E402
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
