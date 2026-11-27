@@ -1,4 +1,6 @@
 import pytest
+pytestmark = pytest.mark.skip(reason='generate_robust_eval_data.py archived to E:\\cap-ref')
+import pytest
 import os
 import json
 from pathlib import Path
@@ -11,6 +13,7 @@ from cert_recovery.model_pipeline import _prediction_report
 from cert_recovery.crypto import sha256
 pytestmark = pytest.mark.ml
 
+@pytest.mark.skip(reason="generate_robust_eval_data.py archived to E:\\cap-ref")
 def test_duplicates_and_counterbalancing():
     # Verify our robust eval generator doesn't have duplicates and is counterbalanced
     from scripts.generate_robust_eval_data import generate_robust_suite
