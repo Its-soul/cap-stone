@@ -21,7 +21,7 @@ SRC_DIR = REPO_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from cert_recovery.oracle.frozen_v1 import (  # noqa: E402
+from cert_recovery.oracle.benchmark_v1 import (  # noqa: E402
     GENERATOR_SEED,
     GENERATOR_VERSION,
     SPEC_VERSION,
@@ -211,7 +211,7 @@ def freeze_phase5(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Freeze Phase 5 dataset splits, oracle labels, and protocol manifest.")
-    parser.add_argument("--dataset-dir", type=Path, default=Path("datasets/frozen_v1"))
+    parser.add_argument("--dataset-dir", type=Path, default=Path("datasets/benchmark_v1"))
     parser.add_argument("--results-dir", type=Path, default=Path("results/phase5"))
     args = parser.parse_args()
     manifest = freeze_phase5(dataset_dir=args.dataset_dir, results_dir=args.results_dir)
