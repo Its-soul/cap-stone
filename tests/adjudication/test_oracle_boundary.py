@@ -58,6 +58,7 @@ RUNTIME_MODULE_PATHS = [
     REPO_ROOT / "src/cert_recovery/adjudication/ledger.py",
     REPO_ROOT / "src/cert_recovery/adjudication/workflow.py",
     REPO_ROOT / "src/cert_recovery/adjudication/model_agent.py",
+    REPO_ROOT / "src/cert_recovery/adjudication/phase4_runner.py",
     REPO_ROOT / "semantic_advice.py",
 ]
 
@@ -125,6 +126,7 @@ def test_runtime_imports_leave_oracle_unloaded_in_sys_modules():
         "import cert_recovery.adjudication.ledger; "
         "import cert_recovery.adjudication.workflow; "
         "import cert_recovery.adjudication.model_agent; "
+        "import cert_recovery.adjudication.phase4_runner; "
         "loaded = [m for m in sys.modules if 'oracle' in m or m.endswith('.ablation') or m.endswith('.composition_evaluation') or m.endswith('.model_evaluation') or m.endswith('.experiments')]; "
         "assert not loaded, f'Oracle/eval modules loaded at runtime: {loaded}'"
     )
@@ -153,6 +155,7 @@ def test_runtime_adjudication_modules_contain_no_oracle_label_references():
         REPO_ROOT / "src/cert_recovery/adjudication/ledger.py",
         REPO_ROOT / "src/cert_recovery/adjudication/workflow.py",
         REPO_ROOT / "src/cert_recovery/adjudication/model_agent.py",
+        REPO_ROOT / "src/cert_recovery/adjudication/phase4_runner.py",
         REPO_ROOT / "src/cert_recovery/engine.py",
     ]
     for path in runtime_adj:

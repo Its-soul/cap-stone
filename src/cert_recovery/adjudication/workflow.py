@@ -18,6 +18,7 @@ from .consensus import ConfidenceWeightedConsensus, Vote, assess, majority
 from .domain import FAULT_MODES, PROMPTS, ROLES, RULES, InsuranceClaim, RuleAgent, rule_decision, simulate_fault
 from .independent_verifier import verify_composition_independently
 from .ledger import Ed25519EventSigner, EventDAG
+from .model_agent import BudgetExceededError
 
 
 class InsuranceAdjudication:
@@ -128,6 +129,8 @@ class InsuranceAdjudication:
             raw = self.backends[role].execute(role, PROMPTS[role], copy.deepcopy(facts), copy.deepcopy(binding))
             raw = simulate_fault(raw, self.faults.get(agent_id))
             canonical_json(raw)  # Reject non-JSON / NaN before it can enter provenance.
+        except BudgetExceededError:
+            raise
         except Exception as error:
             raw = {"execution_error": type(error).__name__}
         output_event = self.ledger.append("agent_output", raw, (execution,), agent_id,
