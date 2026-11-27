@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Claim Simulator — Verifiable Multi-Agent Adjudication</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Certificate Recovery &amp; Verifiable Adjudication</span>
+      </div>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a class="nav-link" href="index.html">Results &amp; Workflow</a>
+        <a class="nav-link active" href="simulator.html">Interactive Claim Simulator</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <span class="hero-tag">Interactive Dependency Simulator</span>
+      <h1>Selective Claim Update &amp; Certificate Recovery</h1>
+      <p>
+        Pick one of 7 preset update scenarios or freely edit any field in Claim Slot A (Certified Before) and Claim Slot B (Proposed Update),
+        then click <strong>Apply Update</strong> to inspect which specialists <strong>RERAN</strong> vs. <strong>REUSED</strong> their certificates.
+      </p>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>1. One-Click Preset Examples</h2>
+        <p class="section-sub">Each preset loads an initial baseline + target edit so you can run or customize it</p>
+      </div>
+      <div class="preset-grid" id="preset-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>2. Claim State Editor (Custom Input Mode)</h2>
+        <p class="section-sub">Edit either slot directly or click <strong>Blank / Reset</strong> for custom testing</p>
+      </div>
+
+      <div class="sim-layout">
+        <!-- Slot A: Current Certified State -->
+        <div class="slot-card">
+          <h3 class="slot-title">
+            <span>Current Certified State (<span id="before-cert-label">v1</span>)</span>
+            <span id="before-decision-pill" class="badge badge-approve">APPROVE</span>
+          </h3>
+          <div class="field-group">
+            <label class="field-label">
+              claim_amount (&#8377;) [Policy]
+              <input type="number" id="before-claim_amount" min="1" step="1000" value="50000" />
+            </label>
+            <label class="field-label">
+              policy_limit (&#8377;) [Policy]
+              <input type="number" id="before-policy_limit" min="1" step="1000" value="65000" />
+            </label>
+          </div>
+          <div class="toggle-list">
+            <label class="toggle-item">
+              <span><code>documents_available</code> <small>(Evidence)</small></span>
+              <select id="before-documents_available">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+            <label class="toggle-item">
+              <span><code>invoice_matches</code> <small>(Evidence)</small></span>
+              <select id="before-invoice_matches">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+            <label class="toggle-item">
+              <span><code>identity_verified</code> <small>(Compliance)</small></span>
+              <select id="before-identity_verified">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+            <label class="toggle-item">
+              <span><code>consent_available</code> <small>(Compliance)</small></span>
+              <select id="before-consent_available">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+            <label class="toggle-item">
+              <span><code>duplicate_flag</code> <small>(Risk)</small></span>
+              <select id="before-duplicate_flag">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <!-- Slot B: Proposed Updated State -->
+        <div class="slot-card" style="background: #ffffff;">
+          <h3 class="slot-title">
+            <span>Proposed Update Input</span>
+            <span id="proposed-preview-tag" class="badge badge-neutral">READY TO APPLY</span>
+          </h3>
+          <div class="field-group">
+            <label class="field-label">
+              claim_amount (&#8377;) [Policy]
+              <input type="number" id="after-claim_amount" min="1" step="1000" value="50000" />
+            </label>
+            <label class="field-label">
+              policy_limit (&#8377;) [Policy]
+              <input type="number" id="after-policy_limit" min="1" step="1000" value="65000" />
+            </label>
+          </div>
+          <div class="toggle-list">
+            <label class="toggle-item">
+              <span><code>documents_available</code> <small>(Evidence)</small></span>
+              <select id="after-documents_available">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+            <label class="toggle-item">
+              <span><code>invoice_matches</code> <small>(Evidence)</small></span>
+              <select id="after-invoice_matches">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+            <label class="toggle-item">
+              <span><code>identity_verified</code> <small>(Compliance)</small></span>
+              <select id="after-identity_verified">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+            <label class="toggle-item">
+              <span><code>consent_available</code> <small>(Compliance)</small></span>
+              <select id="after-consent_available">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+            <label class="toggle-item">
+              <span><code>duplicate_flag</code> <small>(Risk)</small></span>
+              <select id="after-duplicate_flag">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <button class="btn btn-primary" id="btn-apply" type="button">Apply Update</button>
+        <button class="btn" id="btn-reset-base" type="button">Reset to Base Claim (&#8377;50,000 / &#8377;65,000)</button>
+        <button class="btn" id="btn-blank-custom" type="button">Load Blank Custom Slots (All Pending)</button>
+        <button class="btn" id="btn-promote" type="button">Promote Result as Next Certified Baseline</button>
+      </div>
+    </section>
+
+    <section class="section" aria-live="polite">
+      <div class="section-header">
+        <h2>3. Selective Recovery Outcome &amp; Provenance</h2>
+        <p class="section-sub" id="summary-line">Select a preset or edit fields, then click Apply Update.</p>
+      </div>
+
+      <div class="diff-list" id="diff-list"></div>
+
+      <div class="outcome-grid">
+        <div class="outcome-box">
+          <div class="outcome-label">Decision Transition</div>
+          <div class="outcome-val" id="out-decision">-</div>
+        </div>
+        <div class="outcome-box">
+          <div class="outcome-label">Approved Amount</div>
+          <div class="outcome-val" id="out-amount">-</div>
+        </div>
+        <div class="outcome-box">
+          <div class="outcome-label">Certificate Version</div>
+          <div class="outcome-val" id="out-version">-</div>
+        </div>
+        <div class="outcome-box">
+          <div class="outcome-label">Specialists Executed</div>
+          <div class="outcome-val" id="out-execs">-</div>
+        </div>
+      </div>
+
+      <div class="specialists-grid" id="specialists-grid"></div>
+
+      <div style="margin-top: 1rem;">
+        <div class="outcome-label">Cryptographic Certificate Digest &amp; Simulated Signature Record</div>
+        <pre class="mono-box" id="out-crypto"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var BASE_CLAIM = {
+        claim_amount: 50000,
+        policy_limit: 65000,
+        documents_available: true,
+        invoice_matches: true,
+        identity_verified: true,
+        consent_available: true,
+        duplicate_flag: false
+      };
+
+      var PRESETS = [
+        {
+          id: "fix_ref",
+          title: "1. Fix Reference Number",
+          meta: "identity_verified: No -> Yes | Compliance reruns",
+          before: Object.assign({}, BASE_CLAIM, { identity_verified: false }),
+          after:  Object.assign({}, BASE_CLAIM, { identity_verified: true })
+        },
+        {
+          id: "lab_bill",
+          title: "2. Resubmit Missing \u20b98,000 Lab Bill",
+          meta: "amount +50k->58k & documents: No->Yes | Evidence + Policy",
+          before: Object.assign({}, BASE_CLAIM, { documents_available: false }),
+          after:  Object.assign({}, BASE_CLAIM, { claim_amount: 58000, documents_available: true })
+        },
+        {
+          id: "reduce_bill",
+          title: "3. Hospital Reduces Bill",
+          meta: "claim_amount: \u20b950,000 -> \u20b945,000 | Policy reruns",
+          before: Object.assign({}, BASE_CLAIM),
+          after:  Object.assign({}, BASE_CLAIM, { claim_amount: 45000 })
+        },
+        {
+          id: "lower_limit",
+          title: "4. Insurer Lowers Policy Limit",
+          meta: "policy_limit: \u20b965,000 -> \u20b945,000 | APPROVE -> REJECT",
+          before: Object.assign({}, BASE_CLAIM),
+          after:  Object.assign({}, BASE_CLAIM, { policy_limit: 45000 })
+        },
+        {
+          id: "clear_dup",
+          title: "5. Clear Duplicate Flag",
+          meta: "duplicate_flag: Yes -> No | Risk reruns",
+          before: Object.assign({}, BASE_CLAIM, { duplicate_flag: true }),
+          after:  Object.assign({}, BASE_CLAIM, { duplicate_flag: false })
+        },
+        {
+          id: "two_corrections",
+          title: "6. Two Corrections Together",
+          meta: "invoice_matches & consent_available: No -> Yes | Evid. + Comp.",
+          before: Object.assign({}, BASE_CLAIM, { invoice_matches: false, consent_available: false }),
+          after:  Object.assign({}, BASE_CLAIM, { invoice_matches: true, consent_available: true })
+        },
+        {
+          id: "no_change",
+          title: "7. Resubmit Same Facts",
+          meta: "No changes | 0 reruns, cert version unchanged",
+          before: Object.assign({}, BASE_CLAIM),
+          after:  Object.assign({}, BASE_CLAIM)
+        }
+      ];
+
+      var ROLES = [
+        {
+          id: "policy",
+          label: "Policy",
+          contract: "coverage-v1",
+          fields: ["claim_amount", "policy_limit"],
+          evaluate: function (s) {
+            return s.claim_amount <= s.policy_limit ? "APPROVE" : "REJECT";
+          },
+          describe: function (s) {
+            return formatINR(s.claim_amount) + " <= limit " + formatINR(s.policy_limit);
+          }
+        },
+        {
+          id: "evidence",
+          label: "Evidence",
+          contract: "documents-v1",
+          fields: ["documents_available", "invoice_matches"],
+          evaluate: function (s) {
+            return (s.documents_available && s.invoice_matches) ? "APPROVE" : "REVIEW";
+          },
+          describe: function (s) {
+            return "docs=" + yesNo(s.documents_available) + ", invoice=" + yesNo(s.invoice_matches);
+          }
+        },
+        {
+          id: "risk",
+          label: "Risk",
+          contract: "fraud-screen-v1",
+          fields: ["duplicate_flag"],
+          evaluate: function (s) {
+            return !s.duplicate_flag ? "APPROVE" : "REVIEW";
+          },
+          describe: function (s) {
+            return "duplicate_flag=" + yesNo(s.duplicate_flag);
+          }
+        },
+        {
+          id: "compliance",
+          label: "Compliance",
+          contract: "identity-consent-v1",
+          fields: ["identity_verified", "consent_available"],
+          evaluate: function (s) {
+            return (s.identity_verified && s.consent_available) ? "APPROVE" : "REVIEW";
+          },
+          describe: function (s) {
+            return "identity=" + yesNo(s.identity_verified) + ", consent=" + yesNo(s.consent_available);
+          }
+        }
+      ];
+
+      var ALL_FIELDS = [
+        "claim_amount",
+        "policy_limit",
+        "documents_available",
+        "invoice_matches",
+        "identity_verified",
+        "consent_available",
+        "duplicate_flag"
+      ];
+
+      var currentCertVersion = 1;
+      var lastComputedAfter = null;
+      var lastAfterVersion = 1;
+
+      function formatINR(val) {
+        return "\u20b9" + Number(val).toLocaleString("en-IN");
+      }
+
+      function yesNo(b) {
+        return b ? "Yes" : "No";
+      }
+
+      function computeDecision(state) {
+        if (state.claim_amount > state.policy_limit) {
+          return "REJECT";
+        }
+        if (
+          !state.documents_available ||
+          !state.invoice_matches ||
+          !state.identity_verified ||
+          !state.consent_available ||
+          state.duplicate_flag
+        ) {
+          return "REVIEW";
+        }
+        return "APPROVE";
+      }
+
+      function badgeClassForDecision(dec) {
+        if (dec === "APPROVE") return "badge badge-approve";
+        if (dec === "REJECT") return "badge badge-reject";
+        return "badge badge-review";
+      }
+
+      /* Pure deterministic SHA-256 in vanilla JS so file:// double-click works offline everywhere */
+      function sha256Hex(ascii) {
+        function rightRotate(value, amount) {
+          return (value >>> amount) | (value << (32 - amount));
+        }
+        var mathPow = Math.pow;
+        var maxWord = mathPow(2, 32);
+        var i, j, result = "";
+        var words = [], asciiBitLength = ascii.length * 8;
+        var hash = sha256Hex.h = sha256Hex.h || [];
+        var k = sha256Hex.k = sha256Hex.k || [];
+        var primeCounter = k.length;
+        var isComposite = {};
+        for (var candidate = 2; primeCounter < 64; candidate++) {
+          if (!isComposite[candidate]) {
+            for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+            hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+            k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+          }
+        }
+        var localHash = hash.slice(0);
+        ascii += "\x80";
+        while ((ascii.length % 64) - 56) ascii += "\x00";
+        for (i = 0; i < ascii.length; i++) {
+          j = ascii.charCodeAt(i);
+          words[i >> 2] |= j << (((3 - i) % 4) * 8);
+        }
+        words[words.length] = (asciiBitLength / maxWord) | 0;
+        words[words.length] = asciiBitLength;
+        for (j = 0; j < words.length;) {
+          var w = words.slice(j, j += 16);
+          var oldHash = localHash.slice(0);
+          for (i = 0; i < 64; i++) {
+            var w15 = w[i - 15], w2 = w[i - 2];
+            var a = localHash[0], e = localHash[4];
+            var temp1 = localHash[7] +
+              (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) +
+              ((e & localHash[5]) ^ ((~e) & localHash[6])) +
+              k[i] +
+              (w[i] = (i < 16) ? w[i] : (
+                w[i - 16] +
+                (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) +
+                w[i - 7] +
+                (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+              ) | 0);
+            var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) +
+              ((a & localHash[1]) ^ (a & localHash[2]) ^ (localHash[1] & localHash[2]));
+            localHash = [(temp1 + temp2) | 0].concat(localHash);
+            localHash[4] = (localHash[4] + temp1) | 0;
+            localHash.pop();
+          }
+          for (i = 0; i < 8; i++) localHash[i] = (localHash[i] + oldHash[i]) | 0;
+        }
+        for (i = 0; i < 8; i++) {
+          for (j = 3; j + 1; j--) {
+            var b = (localHash[i] >> (j * 8)) & 255;
+            result += ((b < 16) ? 0 : "") + b.toString(16);
+          }
+        }
+        return result;
+      }
+
+      function readSlot(prefix) {
+        var amountEl = document.getElementById(prefix + "-claim_amount");
+        var limitEl = document.getElementById(prefix + "-policy_limit");
+        var amount = Math.max(1, parseInt(amountEl.value, 10) || 1);
+        var limit = Math.max(1, parseInt(limitEl.value, 10) || 1);
+        amountEl.value = amount;
+        limitEl.value = limit;
+        return {
+          claim_amount: amount,
+          policy_limit: limit,
+          documents_available: document.getElementById(prefix + "-documents_available").value === "true",
+          invoice_matches: document.getElementById(prefix + "-invoice_matches").value === "true",
+          identity_verified: document.getElementById(prefix + "-identity_verified").value === "true",
+          consent_available: document.getElementById(prefix + "-consent_available").value === "true",
+          duplicate_flag: document.getElementById(prefix + "-duplicate_flag").value === "true"
+        };
+      }
+
+      function writeSlot(prefix, state) {
+        document.getElementById(prefix + "-claim_amount").value = state.claim_amount;
+        document.getElementById(prefix + "-policy_limit").value = state.policy_limit;
+        document.getElementById(prefix + "-documents_available").value = String(state.documents_available);
+        document.getElementById(prefix + "-invoice_matches").value = String(state.invoice_matches);
+        document.getElementById(prefix + "-identity_verified").value = String(state.identity_verified);
+        document.getElementById(prefix + "-consent_available").value = String(state.consent_available);
+        document.getElementById(prefix + "-duplicate_flag").value = String(state.duplicate_flag);
+      }
+
+      function updateBeforeHeader(beforeState) {
+        var dec = computeDecision(beforeState);
+        var pill = document.getElementById("before-decision-pill");
+        pill.className = badgeClassForDecision(dec);
+        pill.textContent = dec;
+        document.getElementById("before-cert-label").textContent = "v" + currentCertVersion;
+      }
+
+      function formatFieldVal(key, val) {
+        if (key === "claim_amount" || key === "policy_limit") return formatINR(val);
+        return yesNo(val);
+      }
+
+      function runRecoverySimulation() {
+        var before = readSlot("before");
+        var after = readSlot("after");
+        updateBeforeHeader(before);
+
+        var changedFields = ALL_FIELDS.filter(function (f) {
+          return before[f] !== after[f];
+        });
+
+        var decBefore = computeDecision(before);
+        var decAfter = computeDecision(after);
+        var hasChanges = changedFields.length > 0;
+        var nextVersion = hasChanges ? currentCertVersion + 1 : currentCertVersion;
+        lastComputedAfter = after;
+        lastAfterVersion = nextVersion;
+
+        // Diff chips
+        var diffEl = document.getElementById("diff-list");
+        if (!hasChanges) {
+          diffEl.innerHTML = '<span class="badge badge-neutral">No fields changed &mdash; 0 invalidated branches</span>';
+        } else {
+          diffEl.innerHTML = changedFields.map(function (f) {
+            return '<span class="diff-chip">' + f + ": " + formatFieldVal(f, before[f]) + " &rarr; " + formatFieldVal(f, after[f]) + "</span>";
+          }).join("");
+        }
+
+        // Outcomes
+        document.getElementById("out-decision").innerHTML =
+          '<span class="' + badgeClassForDecision(decBefore) + '">' + decBefore + "</span>" +
+          " &rarr; " +
+          '<span class="' + badgeClassForDecision(decAfter) + '">' + decAfter + "</span>";
+
+        var approvedAmountText;
+        if (decAfter === "APPROVE") {
+          approvedAmountText = formatINR(after.claim_amount) + " (Approved)";
+        } else if (decAfter === "REJECT") {
+          approvedAmountText = "\u20b90 (Policy Rejected)";
+        } else {
+          approvedAmountText = "\u20b90 Released (Held for Review)";
+        }
+        document.getElementById("out-amount").textContent = approvedAmountText;
+        document.getElementById("out-version").textContent = hasChanges
+          ? "v" + currentCertVersion + " -> v" + nextVersion + " (new certificate)"
+          : "v" + currentCertVersion + " (unchanged)";
+
+        var reranCount = 0;
+        var cardsHtml = "";
+        ROLES.forEach(function (role) {
+          var dirty = role.fields.some(function (f) {
+            return changedFields.indexOf(f) !== -1;
+          });
+          if (dirty) reranCount += 1;
+          var roleBefore = role.evaluate(before);
+          var roleAfter = role.evaluate(after);
+          var statusBadge = dirty
+            ? '<span class="badge badge-reran">RERAN</span>'
+            : '<span class="badge badge-reused">REUSED</span>';
+          var certVerUsed = dirty ? "v" + nextVersion : "v" + currentCertVersion;
+          var cardClass = dirty ? "specialist-card is-reran" : "specialist-card is-reused";
+
+          cardsHtml +=
+            '<div class="' + cardClass + '">' +
+              '<div class="specialist-top">' +
+                '<span class="specialist-name">' + role.label + ' <small style="font-weight:500;color:#64748b;">(' + role.contract + ")</small></span>" +
+                statusBadge +
+              "</div>" +
+              '<div class="specialist-detail">' +
+                "<div><strong>Outcome:</strong> " + roleBefore + (roleBefore !== roleAfter ? " &rarr; " + roleAfter : "") + "</div>" +
+                "<div><strong>State:</strong> " + role.describe(after) + "</div>" +
+                "<div><strong>Bound Cert:</strong> <code>" + role.id + "@" + certVerUsed + "</code></div>" +
+              "</div>" +
+            "</div>";
+        });
+
+        document.getElementById("specialists-grid").innerHTML = cardsHtml;
+        document.getElementById("out-execs").textContent = reranCount + " of 4 reran (" + (4 - reranCount) + " reused)";
+        document.getElementById("summary-line").textContent = hasChanges
+          ? "Selective recovery updated " + reranCount + " specialist branch(es) and reused " + (4 - reranCount) + "."
+          : "All facts match existing digest; 0 specialists rerun and v" + currentCertVersion + " certificate remains valid.";
+
+        var previewTag = document.getElementById("proposed-preview-tag");
+        previewTag.className = badgeClassForDecision(decAfter);
+        previewTag.textContent = "RESULT: " + decAfter;
+
+        var canonicalBefore = JSON.stringify(before);
+        var canonicalAfter = JSON.stringify(after);
+        var inputDigest = sha256Hex(canonicalAfter);
+        var prevDigest = sha256Hex(canonicalBefore);
+        var ed25519SimSig = sha256Hex("cert-recovery.event.v1|" + nextVersion + "|" + decAfter + "|" + inputDigest) +
+          sha256Hex("ed25519-demo-sim|" + prevDigest);
+
+        document.getElementById("out-crypto").textContent =
+          "round-certificate@" + nextVersion + " | status=" + (hasChanges ? "VALID (supersedes v" + currentCertVersion + ")" : "VALID (retained v" + currentCertVersion + ")") + "\n" +
+          "fact_sha256:    " + inputDigest + "\n" +
+          "parent_sha256:  " + prevDigest + "\n" +
+          "ed25519_sim:    " + ed25519SimSig + "  [deterministic offline demo signature]";
+      }
+
+      function renderPresets() {
+        var grid = document.getElementById("preset-grid");
+        grid.innerHTML = PRESETS.map(function (p, idx) {
+          return (
+            '<button class="preset-btn' + (idx === 0 ? " active" : "") + '" type="button" data-preset="' + p.id + '">' +
+              '<span class="preset-title">' + p.title + "</span>" +
+              '<span class="preset-meta">' + p.meta + "</span>" +
+            "</button>"
+          );
+        }).join("");
+
+        var buttons = grid.querySelectorAll(".preset-btn");
+        buttons.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            buttons.forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+            var targetId = btn.getAttribute("data-preset");
+            var found = PRESETS.filter(function (p) { return p.id === targetId; })[0];
+            currentCertVersion = 1;
+            writeSlot("before", found.before);
+            writeSlot("after", found.after);
+            runRecoverySimulation();
+          });
+        });
+      }
+
+      document.getElementById("btn-apply").addEventListener("click", runRecoverySimulation);
+
+      document.getElementById("btn-reset-base").addEventListener("click", function () {
+        document.querySelectorAll(".preset-btn").forEach(function (b) { b.classList.remove("active"); });
+        currentCertVersion = 1;
+        writeSlot("before", BASE_CLAIM);
+        writeSlot("after", BASE_CLAIM);
+        runRecoverySimulation();
+      });
+
+      document.getElementById("btn-blank-custom").addEventListener("click", function () {
+        document.querySelectorAll(".preset-btn").forEach(function (b) { b.classList.remove("active"); });
+        var blankSlot = {
+          claim_amount: 50000,
+          policy_limit: 65000,
+          documents_available: false,
+          invoice_matches: false,
+          identity_verified: false,
+          consent_available: false,
+          duplicate_flag: true
+        };
+        currentCertVersion = 1;
+        writeSlot("before", blankSlot);
+        writeSlot("after", BASE_CLAIM);
+        runRecoverySimulation();
+      });
+
+      document.getElementById("btn-promote").addEventListener("click", function () {
+        if (lastComputedAfter) {
+          currentCertVersion = lastAfterVersion;
+          writeSlot("before", lastComputedAfter);
+          writeSlot("after", lastComputedAfter);
+          runRecoverySimulation();
+        }
+      });
+
+      ["before", "after"].forEach(function (prefix) {
+        ALL_FIELDS.forEach(function (field) {
+          document.getElementById(prefix + "-" + field).addEventListener("change", function () {
+            updateBeforeHeader(readSlot("before"));
+          });
+        });
+      });
+
+      renderPresets();
+      writeSlot("before", PRESETS[0].before);
+      writeSlot("after", PRESETS[0].after);
+      runRecoverySimulation();
+    })();
+  </script>
+</body>
+</html>

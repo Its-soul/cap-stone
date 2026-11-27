@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Results & Workflow — Verifiable Multi-Agent Adjudication</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Certificate Recovery &amp; Verifiable Adjudication</span>
+      </div>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a class="nav-link active" href="index.html">Results &amp; Workflow</a>
+        <a class="nav-link" href="simulator.html">Interactive Claim Simulator</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <span class="hero-tag">Capstone Static Showcase</span>
+      <h1>Dependency-Aware Certificate Invalidation &amp; Recovery</h1>
+      <p>
+        Untrusted multi-agent specialists submit typed claim assessments, while an independent deterministic verifier,
+        Ed25519 provenance DAG, and versioned dependency graph ensure only affected branches recompute when source facts change.
+      </p>
+    </section>
+
+    <section class="kpi-grid" aria-label="Key metrics summary">
+      <div class="kpi-card">
+        <div class="kpi-label">Decision Accuracy</div>
+        <div class="kpi-value">100.0%</div>
+        <div class="kpi-note">Clean held-out offline (104/104) &amp; live Groq <code>openai/gpt-oss-20b</code> (36/36)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Unsafe Approval Rate</div>
+        <div class="kpi-value">0.00%</div>
+        <div class="kpi-note">0/80 clean, 0/800 multi-seed fault sweep, and 0/28 live non-approve cases</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Selective Rerun Savings</div>
+        <div class="kpi-value">75.0% Live</div>
+        <div class="kpi-note">12 vs. 48 live LLM calls (4&times; reduction); 35 vs. 128 calls offline (72.7% saved)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Tamper &amp; Stale Catch</div>
+        <div class="kpi-value">100.0%</div>
+        <div class="kpi-note">9/9 Ed25519 log attacks detected &amp; 7/7 stale-certificate replay controls verified</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>End-to-End Verification &amp; Selective Recovery Workflow</h2>
+        <p class="section-sub">Trusted verification boundary + content-addressed dependency invalidation</p>
+      </div>
+      <div class="flow-track" role="region" aria-label="Adjudication and recovery workflow">
+        <div class="flow-step">
+          <div class="flow-num">Step 1</div>
+          <div class="flow-title">Claim Facts</div>
+          <div class="flow-desc">Typed fields partitioned into 4 isolated slices.</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-num">Step 2</div>
+          <div class="flow-title">4 Specialists</div>
+          <div class="flow-desc">Policy, Evidence, Risk, and Compliance proposers.</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-step highlight">
+          <div class="flow-num">Step 3</div>
+          <div class="flow-title">Independent Verifier</div>
+          <div class="flow-desc">Re-checks rules &amp; bindings from source ancestry.</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-step highlight">
+          <div class="flow-num">Step 4</div>
+          <div class="flow-title">Signed Certificate</div>
+          <div class="flow-desc">Ed25519 signature + SHA-256 <code>EventDAG</code> entry.</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-num">Step 5</div>
+          <div class="flow-title">Fact Update</div>
+          <div class="flow-desc">Any mutated claim field advances to <code>v2</code>.</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-num">Step 6</div>
+          <div class="flow-title">Dependency Graph</div>
+          <div class="flow-desc">Invalidates downstream dirty nodes only.</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-num">Step 7</div>
+          <div class="flow-title">Targeted Execution</div>
+          <div class="flow-branch">
+            <div class="flow-step rerun-box" style="padding: 0.35rem 0.45rem;">
+              <div class="flow-title" style="font-size: 0.78rem;">Selective Rerun</div>
+              <div class="flow-desc" style="font-size: 0.7rem;">Affected roles only</div>
+            </div>
+            <div class="flow-step reuse-box" style="padding: 0.35rem 0.45rem;">
+              <div class="flow-title" style="font-size: 0.78rem;">Reuse Valid Certs</div>
+              <div class="flow-desc" style="font-size: 0.7rem;">Unaffected roles</div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-step highlight">
+          <div class="flow-num">Step 8</div>
+          <div class="flow-title">New Certificate</div>
+          <div class="flow-desc">Issues <code>v2</code> cert &amp; supersedes stale <code>v1</code>.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Benchmark Results Summary</h2>
+        <p class="section-sub">Measured offline synthetic suite (<code>N=104</code>, 32 updates) &amp; live Groq <code>openai/gpt-oss-20b</code> run (<code>N=36</code>, 12 updates)</p>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Evaluation Metric</th>
+              <th>System / Baseline Scope</th>
+              <th class="num">Measured Result</th>
+              <th class="num">Comparator / Ablated</th>
+              <th>Verification Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Decision Accuracy (Offline Clean)</strong></td>
+              <td>Full Verified System (<code>FULL_DET</code>, <code>N=104</code>)</td>
+              <td class="num"><strong>100.00%</strong> (104/104)</td>
+              <td class="num">74.04% Policy-Veto Vote / 29.81% Majority</td>
+              <td>Offline deterministic suite (<code>results/live_evaluation/tables_and_metrics.json</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>Decision Accuracy (Live LLM)</strong></td>
+              <td>Verified Multi-Agent (<code>FULL_LIVE</code>, <code>N=36</code>)</td>
+              <td class="num"><strong>100.00%</strong> (36/36)</td>
+              <td class="num">83.33% LLM-Judge / 77.78% Single-Agent</td>
+              <td>Live Groq <code>openai/gpt-oss-20b</code> (325 total API attempts)</td>
+            </tr>
+            <tr>
+              <td><strong>Unsafe Approval Rate</strong></td>
+              <td>Gated Composition vs. Ungated Fault Sweep</td>
+              <td class="num"><strong>0.00%</strong> (0/800)</td>
+              <td class="num">50.75% Policy-Veto / 85.25% Weighted Vote</td>
+              <td>10-seed fault sweep (1,040 trials; 800 non-approve claims)</td>
+            </tr>
+            <tr>
+              <td><strong>Selective Rerun Call Savings</strong></td>
+              <td>Incremental <code>v1 &rarr; v2</code> Recovery (12 live / 32 offline)</td>
+              <td class="num"><strong>75.0% Live</strong> (12 vs. 48)</td>
+              <td class="num">72.7% Offline (35 vs. 128 specialist calls)</td>
+              <td>100.0% decision equivalence across live &amp; offline updates</td>
+            </tr>
+            <tr>
+              <td><strong>Verifier Fault Containment</strong></td>
+              <td>Schema &amp; Binding Validator (<code>N=104</code> injected faults)</td>
+              <td class="num"><strong>86.54%</strong> (0.00% unsafe)</td>
+              <td class="num">42.31% without validator (87.50% unsafe)</td>
+              <td>Remaining 14 unchanged <code>APPROVE</code> inputs valid by spec</td>
+            </tr>
+            <tr>
+              <td><strong>Stale Certificate Prevention</strong></td>
+              <td>Commit &amp; Update Replay Checks (32 updates / 7 replay)</td>
+              <td class="num"><strong>100.00%</strong> (0/32 stale)</td>
+              <td class="num">81.25% stale rate (26/32) without certs</td>
+              <td>100% pass across 7 replay/commit control scenarios</td>
+            </tr>
+            <tr>
+              <td><strong>Tamper Detection Rate</strong></td>
+              <td>Ed25519 Signed <code>EventDAG</code> + Checkpoint Anchor</td>
+              <td class="num"><strong>100.00%</strong> (9/9 caught)</td>
+              <td class="num">0/9 detected without signed provenance</td>
+              <td>Controlled byte-tamper, splice, reorder &amp; rollback suite</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="footnote">
+        All offline and live metrics come from saved repository runs in <code>results/live_evaluation/tables_and_metrics.json</code>
+        and composition benchmarks in <code>results/composition/composition_evaluation_extended.json</code>.
+      </p>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>3&times;3 Classification Confusion Matrix</h2>
+        <p class="section-sub" id="cm-subtitle">Actual Oracle Label (rows) vs. Predicted Decision (columns)</p>
+      </div>
+
+      <div class="pill-row" role="tablist" aria-label="Select model arm for confusion matrix">
+        <button class="pill-btn active" type="button" data-arm="full_live">Live Verified System (FULL_LIVE, N=36)</button>
+        <button class="pill-btn" type="button" data-arm="full_det">Offline Clean System (FULL_DET, N=104)</button>
+        <button class="pill-btn" type="button" data-arm="llm_judge">Live LLM-as-a-Judge (N=36)</button>
+        <button class="pill-btn" type="button" data-arm="single_llm">Live Single-Agent E2E LLM (N=36)</button>
+        <button class="pill-btn" type="button" data-arm="faulted_comp">Seeded Fault Composition (N=150)</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cm-table" aria-live="polite">
+          <thead>
+            <tr>
+              <th>Actual &darr; / Predicted &rarr;</th>
+              <th>APPROVE</th>
+              <th>REVIEW</th>
+              <th>REJECT</th>
+              <th>Row Total</th>
+            </tr>
+          </thead>
+          <tbody id="cm-body"></tbody>
+        </table>
+      </div>
+      <p class="footnote" id="cm-caption"></p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var MATRICES = {
+        full_live: {
+          title: "Live Verified System (FULL_LIVE, Groq openai/gpt-oss-20b, N=36)",
+          caption: "Exact Match: 100.0% (36/36) | Unsafe Approvals: 0/28 (0.00%) | Automated Coverage: 66.7% (24/36).",
+          rows: {
+            APPROVE: [8, 0, 0],
+            REVIEW:  [0, 12, 0],
+            REJECT:  [0, 0, 16]
+          }
+        },
+        full_det: {
+          title: "Offline Clean Benchmark (FULL_DET, N=104 Unique Claims)",
+          caption: "Exact Match: 100.0% (104/104) | Unsafe Approvals: 0/80 (0.00%) | False Rejects: 0/58 (0.00%).",
+          rows: {
+            APPROVE: [24, 0, 0],
+            REVIEW:  [0, 34, 0],
+            REJECT:  [0, 0, 46]
+          }
+        },
+        llm_judge: {
+          title: "Live Unverified Baseline (LLM_AS_JUDGE, Groq openai/gpt-oss-20b, N=36)",
+          caption: "Exact Match: 83.3% (30/36) | Unsafe Approvals: 0/28 | 6 errors: 3 JSON truncation fallbacks + 3 missed policy-exclusion rejections.",
+          rows: {
+            APPROVE: [8, 0, 0],
+            REVIEW:  [0, 12, 0],
+            REJECT:  [0, 6, 10]
+          }
+        },
+        single_llm: {
+          title: "Live Unverified Baseline (SINGLE_AGENT_E2E_LLM, Groq openai/gpt-oss-20b, N=36)",
+          caption: "Exact Match: 77.8% (28/36) | Unsafe Approvals: 0/28 | All 8 errors were over-conservative REVIEW abstentions on clean APPROVE boundary claims.",
+          rows: {
+            APPROVE: [0, 8, 0],
+            REVIEW:  [0, 12, 0],
+            REJECT:  [0, 0, 16]
+          }
+        },
+        faulted_comp: {
+          title: "Composition Under Multi-Seed Agent Corruptions (COMP, N=150 Trials, 0%-40% Fault Rates)",
+          caption: "Accuracy: 84.0% (126/150) | Unsafe Approvals: 0/120 (0.00%) | Corrupted branches abstain safely to REVIEW without leaking unsafe approvals.",
+          rows: {
+            APPROVE: [13, 17, 0],
+            REVIEW:  [0, 75, 0],
+            REJECT:  [0, 7, 38]
+          }
+        }
+      };
+
+      var LABELS = ["APPROVE", "REVIEW", "REJECT"];
+      var bodyEl = document.getElementById("cm-body");
+      var subEl = document.getElementById("cm-subtitle");
+      var capEl = document.getElementById("cm-caption");
+      var btns = document.querySelectorAll(".pill-btn");
+
+      function cellClass(actualIdx, predIdx, count) {
+        if (actualIdx === predIdx) {
+          if (actualIdx === 0) return "cm-diag-approve";
+          if (actualIdx === 1) return "cm-diag-review";
+          return "cm-diag-reject";
+        }
+        if (count === 0) return "cm-zero";
+        if (predIdx === 0 && actualIdx !== 0) return "cm-err-danger";
+        return "cm-err-warn";
+      }
+
+      function renderMatrix(key) {
+        var data = MATRICES[key];
+        subEl.textContent = data.title;
+        capEl.textContent = data.caption;
+
+        var html = "";
+        LABELS.forEach(function (label, rIdx) {
+          var vals = data.rows[label];
+          var rowSum = vals[0] + vals[1] + vals[2];
+          html += "<tr>";
+          html += "<th>" + label + "</th>";
+          vals.forEach(function (count, cIdx) {
+            html += '<td class="' + cellClass(rIdx, cIdx, count) + '">' + count + "</td>";
+          });
+          html += '<td class="num"><strong>' + rowSum + "</strong></td>";
+          html += "</tr>";
+        });
+        bodyEl.innerHTML = html;
+      }
+
+      btns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          btns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          renderMatrix(btn.getAttribute("data-arm"));
+        });
+      });
+
+      renderMatrix("full_live");
+    })();
+  </script>
+</body>
+</html>
