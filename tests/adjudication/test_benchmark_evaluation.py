@@ -26,16 +26,16 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def test_frozen_hash_preflight_detects_tampering(tmp_path: Path):
     """Modifying a frozen Phase 5 dataset file aborts verification immediately."""
-    manifest_src = REPO_ROOT / "datasets" / "frozen_v1" / "frozen_evaluation_manifest.json"
+    manifest_src = REPO_ROOT / "datasets" / "benchmark_v1" / "frozen_evaluation_manifest.json"
     info = verify_frozen_manifest(manifest_src, REPO_ROOT)
     assert len(info["verified_hashes"]) == 8
 
     # Copy dataset & manifest into tmp_path and mutate test_inputs.jsonl by 1 byte
-    ds_dir = tmp_path / "datasets" / "frozen_v1"
+    ds_dir = tmp_path / "datasets" / "benchmark_v1"
     ds_dir.mkdir(parents=True)
     docs_dir = tmp_path / "docs"
     docs_dir.mkdir(parents=True)
-    for f in (REPO_ROOT / "datasets" / "frozen_v1").glob("*.jsonl"):
+    for f in (REPO_ROOT / "datasets" / "benchmark_v1").glob("*.jsonl"):
         shutil.copy(f, ds_dir / f.name)
     for f in (REPO_ROOT / "docs").glob("FROZEN_*.md"):
         shutil.copy(f, docs_dir / f.name)
@@ -64,12 +64,12 @@ def test_frozen_hash_preflight_detects_tampering(tmp_path: Path):
 def test_live_subset_36_covers_all_8_families_and_blocked_when_key_unset(tmp_path: Path):
     """Stratified 36-claim subset covers all 8 test families and returns BLOCKED cleanly when key unset."""
     manifest_info = verify_frozen_manifest(
-        REPO_ROOT / "datasets" / "frozen_v1" / "frozen_evaluation_manifest.json", REPO_ROOT
+        REPO_ROOT / "datasets" / "benchmark_v1" / "frozen_evaluation_manifest.json", REPO_ROOT
     )
-    test_inputs = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_inputs.jsonl")
-    test_labels = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_oracle_labels.jsonl")
-    upd_inputs = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_update_paths.jsonl")
-    upd_labels = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_update_oracle_labels.jsonl")
+    test_inputs = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_inputs.jsonl")
+    test_labels = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_oracle_labels.jsonl")
+    upd_inputs = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_update_paths.jsonl")
+    upd_labels = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_update_oracle_labels.jsonl")
 
     sub = select_live_subset_36(test_inputs, test_labels, upd_inputs)
     assert sub["claim_count"] == 36
@@ -94,12 +94,12 @@ def test_live_subset_36_covers_all_8_families_and_blocked_when_key_unset(tmp_pat
 def test_live_pipeline_contract_and_resume_skipping_with_labeled_offline_fake(tmp_path: Path):
     """EXPLICIT OFFLINE CONTRACT TEST ONLY: verifies Single-Agent, Judge, Recovery & --resume skipping."""
     manifest_info = verify_frozen_manifest(
-        REPO_ROOT / "datasets" / "frozen_v1" / "frozen_evaluation_manifest.json", REPO_ROOT
+        REPO_ROOT / "datasets" / "benchmark_v1" / "frozen_evaluation_manifest.json", REPO_ROOT
     )
-    test_inputs = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_inputs.jsonl")
-    test_labels = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_oracle_labels.jsonl")
-    upd_inputs = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_update_paths.jsonl")
-    upd_labels = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_update_oracle_labels.jsonl")
+    test_inputs = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_inputs.jsonl")
+    test_labels = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_oracle_labels.jsonl")
+    upd_inputs = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_update_paths.jsonl")
+    upd_labels = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_update_oracle_labels.jsonl")
 
     full_sub = select_live_subset_36(test_inputs, test_labels, upd_inputs)
     # Trim subset to 3 claims + 2 updates for fast deterministic offline contract check
@@ -182,12 +182,12 @@ def test_live_builder_path_end_to_end_with_mocked_urlopen_and_pacing(monkeypatch
     from cert_recovery.adjudication.domain import RULES
 
     manifest_info = verify_frozen_manifest(
-        REPO_ROOT / "datasets" / "frozen_v1" / "frozen_evaluation_manifest.json", REPO_ROOT
+        REPO_ROOT / "datasets" / "benchmark_v1" / "frozen_evaluation_manifest.json", REPO_ROOT
     )
-    test_inputs = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_inputs.jsonl")
-    test_labels = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_oracle_labels.jsonl")
-    upd_inputs = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_update_paths.jsonl")
-    upd_labels = _load_jsonl(REPO_ROOT / "datasets" / "frozen_v1" / "test_update_oracle_labels.jsonl")
+    test_inputs = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_inputs.jsonl")
+    test_labels = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_oracle_labels.jsonl")
+    upd_inputs = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_update_paths.jsonl")
+    upd_labels = _load_jsonl(REPO_ROOT / "datasets" / "benchmark_v1" / "test_update_oracle_labels.jsonl")
 
     full_sub = select_live_subset_36(test_inputs, test_labels, upd_inputs)
     mini_sub = {
