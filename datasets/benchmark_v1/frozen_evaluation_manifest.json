@@ -1,0 +1,651 @@
+{
+  "authorized_live_model": {
+    "api_key_env_var": "GROQ_API_KEY",
+    "min_call_interval_sec": 5.0,
+    "model_id": "openai/gpt-oss-20b",
+    "provider": "groq",
+    "temperature": 0.0
+  },
+  "blind_teammate_cases": {
+    "count": 0,
+    "notes": "Blind external template contains 0 submissions (`PENDING_TEAMMATE_SUBMISSION`).",
+    "path": "D:\\Code\\Github\\certificate-recovery\\datasets\\blind_external_template.json",
+    "sha256": "9189b8859ff049375ea178e3d483cb5e0ae40524530e6db054b2a1eb35051bce",
+    "status": "PENDING_TEAMMATE_SUBMISSION",
+    "target_count": 20
+  },
+  "code_commit_sha": "5519e373ff8117969fdc02bb2d72eea22435ecf0",
+  "dataset_audit": {
+    "all_labels_cross_checked": true,
+    "ambiguous_or_excluded_edge_cases": [
+      {
+        "claim_id": "p5_dev_fam_dev_mixed_limit_dup_000",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_dev_fam_dev_mixed_limit_dup_001",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_dev_fam_dev_mixed_limit_dup_002",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_dev_fam_dev_mixed_limit_dup_003",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_dev_fam_dev_mixed_limit_dup_004",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_dev_fam_dev_mixed_limit_dup_005",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_000",
+        "derived_label": "APPROVE",
+        "flags": [
+          "exact_coverage_limit_equality"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_001",
+        "derived_label": "APPROVE",
+        "flags": [
+          "exact_coverage_limit_equality"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_002",
+        "derived_label": "APPROVE",
+        "flags": [
+          "exact_coverage_limit_equality"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_003",
+        "derived_label": "APPROVE",
+        "flags": [
+          "exact_coverage_limit_equality"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_004",
+        "derived_label": "APPROVE",
+        "flags": [
+          "exact_coverage_limit_equality"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_005",
+        "derived_label": "APPROVE",
+        "flags": [
+          "exact_coverage_limit_equality"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_006",
+        "derived_label": "APPROVE",
+        "flags": [
+          "one_rupee_below_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_007",
+        "derived_label": "APPROVE",
+        "flags": [
+          "one_rupee_below_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_008",
+        "derived_label": "APPROVE",
+        "flags": [
+          "one_rupee_below_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_009",
+        "derived_label": "APPROVE",
+        "flags": [
+          "one_rupee_below_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_clean_boundary_and_micro_011",
+        "derived_label": "APPROVE",
+        "flags": [
+          "one_rupee_below_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_single_over_limit_000",
+        "derived_label": "REJECT",
+        "flags": [
+          "one_rupee_over_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_single_over_limit_001",
+        "derived_label": "REJECT",
+        "flags": [
+          "one_rupee_over_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_single_over_limit_002",
+        "derived_label": "REJECT",
+        "flags": [
+          "one_rupee_over_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_single_over_limit_003",
+        "derived_label": "REJECT",
+        "flags": [
+          "one_rupee_over_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_single_over_limit_004",
+        "derived_label": "REJECT",
+        "flags": [
+          "one_rupee_over_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_single_over_limit_005",
+        "derived_label": "REJECT",
+        "flags": [
+          "one_rupee_over_coverage_limit"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_000",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_001",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_002",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_003",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_004",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_005",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_006",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_007",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_008",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_009",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_010",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      },
+      {
+        "claim_id": "p5_test_fam_test_mixed_exclusion_procedural_011",
+        "derived_label": "REJECT",
+        "flags": [
+          "mixed_exclusion_and_procedural_failure"
+        ]
+      }
+    ],
+    "dev_class_distribution": {
+      "APPROVE": 6,
+      "REJECT": 12,
+      "REVIEW": 6
+    },
+    "dev_count": 24,
+    "dev_family_count": 4,
+    "family_table": [
+      {
+        "APPROVE": 6,
+        "REJECT": 0,
+        "REVIEW": 0,
+        "count": 6,
+        "family_id": "FAM_DEV_CLEAN_MODERATE",
+        "split": "dev",
+        "unique_fact_hashes": 6
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 0,
+        "REVIEW": 6,
+        "count": 6,
+        "family_id": "FAM_DEV_MISSING_DOCS",
+        "split": "dev",
+        "unique_fact_hashes": 6
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 6,
+        "REVIEW": 0,
+        "count": 6,
+        "family_id": "FAM_DEV_MIXED_LIMIT_DUP",
+        "split": "dev",
+        "unique_fact_hashes": 6
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 6,
+        "REVIEW": 0,
+        "count": 6,
+        "family_id": "FAM_DEV_WAITING_EXCL",
+        "split": "dev",
+        "unique_fact_hashes": 6
+      },
+      {
+        "APPROVE": 24,
+        "REJECT": 0,
+        "REVIEW": 0,
+        "count": 24,
+        "family_id": "FAM_TEST_CLEAN_BOUNDARY_AND_MICRO",
+        "split": "test",
+        "unique_fact_hashes": 24
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 12,
+        "REVIEW": 0,
+        "count": 12,
+        "family_id": "FAM_TEST_MIXED_EXCLUSION_PROCEDURAL",
+        "split": "test",
+        "unique_fact_hashes": 12
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 10,
+        "REVIEW": 0,
+        "count": 10,
+        "family_id": "FAM_TEST_MULTI_POLICY_EXCL",
+        "split": "test",
+        "unique_fact_hashes": 10
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 0,
+        "REVIEW": 10,
+        "count": 10,
+        "family_id": "FAM_TEST_REVIEW_COMPLIANCE_MULTI",
+        "split": "test",
+        "unique_fact_hashes": 10
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 0,
+        "REVIEW": 12,
+        "count": 12,
+        "family_id": "FAM_TEST_REVIEW_INVOICE_EVIDENCE",
+        "split": "test",
+        "unique_fact_hashes": 12
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 0,
+        "REVIEW": 12,
+        "count": 12,
+        "family_id": "FAM_TEST_REVIEW_RISK_ONLY",
+        "split": "test",
+        "unique_fact_hashes": 12
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 12,
+        "REVIEW": 0,
+        "count": 12,
+        "family_id": "FAM_TEST_SINGLE_HOSP_EXCL",
+        "split": "test",
+        "unique_fact_hashes": 12
+      },
+      {
+        "APPROVE": 0,
+        "REJECT": 12,
+        "REVIEW": 0,
+        "count": 12,
+        "family_id": "FAM_TEST_SINGLE_OVER_LIMIT",
+        "split": "test",
+        "unique_fact_hashes": 12
+      }
+    ],
+    "generator_seed": 20261127,
+    "generator_version": "frozen-gen-v1",
+    "integrity_passed": true,
+    "overlapping_fact_hash_count": 0,
+    "overlapping_fact_hashes": [],
+    "overlapping_families": [],
+    "overlapping_family_count": 0,
+    "overlapping_non_approve_boolean_signatures": 0,
+    "spec_version": "spec-v1",
+    "test_class_distribution": {
+      "APPROVE": 24,
+      "REJECT": 46,
+      "REVIEW": 34
+    },
+    "test_count": 104,
+    "test_family_count": 8,
+    "total_claims": 128,
+    "unique_claim_ids": 128,
+    "unique_fact_hashes": 128,
+    "update_kind_distribution": {
+      "broad_multi_role": 8,
+      "narrow_single_role": 12,
+      "no_change_edit": 6,
+      "same_label_value_edit": 6
+    },
+    "update_paths_count": 32
+  },
+  "deprecated_historical_reference": {
+    "arm_id": "LEGACY_ARM_E_EXCLUSION_BLIND",
+    "reason": "Exclusion-blind whole-claim weighted consensus (`mode='legacy'` from v0-paper) is retained strictly as a deprecated historical reference note.",
+    "status": "DROPPED_FROM_PRIMARY_COMPARISONS"
+  },
+  "generated_utc": "2026-11-27T07:56:19.562546+00:00",
+  "generator_seed": 20261127,
+  "generator_version": "frozen-gen-v1",
+  "hashes": {
+    "decision_spec_v1": {
+      "path": "docs/FROZEN_DECISION_SPEC_V1.md",
+      "sha256": "6e086f7182d38823023d05eb1675c196ed195319582e40729c11df045a386cf5"
+    },
+    "dev_inputs": {
+      "path": "datasets\\frozen_v1\\dev_inputs.jsonl",
+      "sha256": "fc3dc1d8636087ee466d0b989163f9791f901decc1970a49f2432d9ac13bedbe"
+    },
+    "dev_oracle_labels": {
+      "path": "datasets\\frozen_v1\\dev_oracle_labels.jsonl",
+      "sha256": "cc09bcf0fb8ec8b070e2f8664229d87c5fc95ea9cb36ca86e461328a3b46842d"
+    },
+    "evaluation_protocol_v1": {
+      "path": "docs/FROZEN_EVALUATION_PROTOCOL_V1.md",
+      "sha256": "d2119f08150e2f8677eafe94e0db142d6eb0d29e0cd4df0c8078530d96516a04"
+    },
+    "test_inputs": {
+      "path": "datasets\\frozen_v1\\test_inputs.jsonl",
+      "sha256": "4dd9d70b6f3dcb56ecf25fd236f854fa0a3f30b6ca5e14a4ed181597d4d512ff"
+    },
+    "test_oracle_labels": {
+      "path": "datasets\\frozen_v1\\test_oracle_labels.jsonl",
+      "sha256": "06e359a067cfc34185d004432be2b4dfb34fd33e5f7879415536138923db86d3"
+    },
+    "test_update_inputs": {
+      "path": "datasets\\frozen_v1\\test_update_paths.jsonl",
+      "sha256": "c298eb2467a04daf050e95259e8da0afe48761b0f1ca018359565e7fe673b957"
+    },
+    "test_update_oracle_labels": {
+      "path": "datasets\\frozen_v1\\test_update_oracle_labels.jsonl",
+      "sha256": "6523c7443bdd9fe7c6ede7a48288ef5fa849b4ae2d63b709bae3cc3d540c5fde"
+    }
+  },
+  "live_budget_plan": {
+    "authorized_model_id": "openai/gpt-oss-20b",
+    "authorized_provider": "groq",
+    "calibration_source": "results/phase4/pilot_summary.json & live_pilot_calls.jsonl (525.54 dev avg tokens/call, 4.73s avg latency)",
+    "option_a_full_test_104_claims": {
+      "FULL_LIVE_first_run_only": {
+        "calls": 416,
+        "estimated_cost_usd": 0.0,
+        "estimated_tokens": 228800,
+        "estimated_wall_clock_minutes": 34.7
+      },
+      "FULL_LIVE_plus_selective_updates": {
+        "calls": 474,
+        "estimated_cost_usd": 0.0,
+        "estimated_tokens": 260700,
+        "estimated_wall_clock_minutes": 39.5
+      },
+      "all_3_live_arms_plus_updates": {
+        "calls": 682,
+        "estimated_cost_usd": 0.0,
+        "estimated_tokens": 375100,
+        "estimated_wall_clock_minutes": 56.8
+      },
+      "note": "Running all 3 live LLM arms on 104 claims (~674 calls / ~371k tokens / ~56 min) risks Groq free-tier daily RPD/TPD exhaustion; prioritize FULL_LIVE on 104 claims OR invoke Option B if daily quota triggers."
+    },
+    "option_b_stratified_36_claim_live_subset": {
+      "FULL_LIVE": {
+        "calls": 144,
+        "estimated_cost_usd": 0.0,
+        "estimated_tokens": 79200,
+        "estimated_wall_clock_minutes": 12.0
+      },
+      "LLM_AS_JUDGE_reusing_specialists": {
+        "calls": 36,
+        "estimated_cost_usd": 0.0,
+        "estimated_tokens": 19800,
+        "estimated_wall_clock_minutes": 3.0
+      },
+      "SINGLE_AGENT_E2E_LLM": {
+        "calls": 36,
+        "estimated_cost_usd": 0.0,
+        "estimated_tokens": 19800,
+        "estimated_wall_clock_minutes": 3.0
+      },
+      "note": "Balanced across all 8 held-out test families (~20 min, 240 calls, ~132k tokens) safely within single-session Groq free-tier TPM/RPD.",
+      "selective_recovery_updates": {
+        "calls": 24,
+        "estimated_cost_usd": 0.0,
+        "estimated_tokens": 13200,
+        "estimated_wall_clock_minutes": 2.0
+      },
+      "total_all_live_arms": {
+        "calls": 240,
+        "estimated_cost_usd": 0.0,
+        "estimated_tokens": 132000,
+        "estimated_wall_clock_minutes": 20.0
+      }
+    },
+    "planning_assumptions": {
+      "avg_tokens_per_call": 550.0,
+      "calls_per_minute": 12.0,
+      "groq_free_tier_tpm_limit": 8000,
+      "min_call_interval_sec": 5.0,
+      "projected_tpm": 6600.0,
+      "safety_margin_below_tpm_limit": 1400.0
+    },
+    "stopping_rules": [
+      "Enforce LiveCallBudget hard caps per run (max_calls and max_cost_usd) before each outbound HTTP call.",
+      "On 3 consecutive HTTP 429 daily/TPD quota errors (after honoring server Retry-After hint <= 30s), halt remaining live calls cleanly and record partial live coverage without fabricating missing results.",
+      "NEVER execute live inference or frozen test-set runs inside Phase 5; reserve execution strictly for Phase 6."
+    ]
+  },
+  "phase": "Phase 5 (Frozen Dataset, Spec, Baselines, Stats, Budget; ZERO test evaluation run)",
+  "primary_baselines": [
+    {
+      "arm_id": "FULL_DET",
+      "category": "primary_system",
+      "decision_authority": "composition-v1 (substantive_exclusion)",
+      "input_visibility": "strict_role_scoped",
+      "llm_calls_per_claim": 0,
+      "name": "Full System (Deterministic Rule Specialists)",
+      "validation_rules": "assess_specialist + verify_composition_independently"
+    },
+    {
+      "arm_id": "FULL_LIVE",
+      "category": "primary_system",
+      "decision_authority": "composition-v1 (substantive_exclusion)",
+      "input_visibility": "strict_role_scoped",
+      "llm_calls_per_claim": 4,
+      "name": "Full System (Role-Isolated groq:openai/gpt-oss-20b)",
+      "validation_rules": "assess_specialist + verify_composition_independently + Ed25519 EventDAG"
+    },
+    {
+      "arm_id": "MAJORITY_VOTE",
+      "category": "baseline",
+      "decision_authority": "unweighted_majority (ties -> REVIEW)",
+      "input_visibility": "strict_role_scoped",
+      "llm_calls_per_claim": "0 (reuses role outputs) or 4",
+      "name": "Majority Vote (No Exclusion Gate)",
+      "validation_rules": "none_on_gate"
+    },
+    {
+      "arm_id": "CONFIDENCE_WEIGHTED_VOTE",
+      "category": "baseline",
+      "decision_authority": "confidence_weighted_consensus (no mandatory gate)",
+      "input_visibility": "strict_role_scoped",
+      "llm_calls_per_claim": "0 (reuses role outputs) or 4",
+      "name": "Confidence-Weighted Vote (No Exclusion Gate)",
+      "validation_rules": "confidence weighting only"
+    },
+    {
+      "arm_id": "MAJORITY_POLICY_VETO",
+      "category": "strong_non_strawman_baseline",
+      "decision_authority": "validated policy REJECT veto + unweighted majority otherwise",
+      "input_visibility": "strict_role_scoped",
+      "llm_calls_per_claim": "0 (reuses role outputs) or 4",
+      "name": "Majority with Validated Policy Veto",
+      "validation_rules": "policy obligation validated against coverage-v1; other votes majority"
+    },
+    {
+      "arm_id": "SINGLE_AGENT_E2E_LLM",
+      "category": "baseline_llm",
+      "decision_authority": "single monolithic LLM decision",
+      "input_visibility": "full_unscoped_claim (all 10 fields)",
+      "llm_calls_per_claim": 1,
+      "name": "Single-Agent End-to-End LLM",
+      "validation_rules": "JSON schema parse only"
+    },
+    {
+      "arm_id": "LLM_AS_JUDGE",
+      "category": "baseline_llm_budget_capped",
+      "decision_authority": "judge LLM verdict (no deterministic gate)",
+      "input_visibility": "4 specialist outputs -> 1 judge LLM prompt",
+      "llm_calls_per_claim": "1 judge (+4 specialist = 5 total, or 1 if reusing FULL_LIVE outputs)",
+      "name": "LLM-as-Judge over 4 Specialist Outputs",
+      "validation_rules": "JSON schema parse on judge (+1 call reusing 4 specialist outputs)"
+    }
+  ],
+  "spec_version": "spec-v1",
+  "statistical_protocol": {
+    "binomial_ci_method": "95% Wilson score interval",
+    "bootstrap_ci_method": "Paired percentile bootstrap (B=2000, supporting family-clustered resampling)",
+    "hypothesis_test": "Exact two-sided McNemar test on paired per-case binary outcomes (exploratory tag required for multi-seed/subgroup views)",
+    "num_sweep_seeds": 10,
+    "protocol_version": "protocol-v1",
+    "sweep_seeds": [
+      101,
+      202,
+      303,
+      404,
+      505,
+      606,
+      707,
+      808,
+      909,
+      1010
+    ]
+  },
+  "sweep_seeds": [
+    101,
+    202,
+    303,
+    404,
+    505,
+    606,
+    707,
+    808,
+    909,
+    1010
+  ],
+  "targeted_ablations": [
+    {
+      "ablation_id": "no_gate",
+      "delta_from_full": "Bypass composition-v1 mandatory policy-exclusion gate (fall back to advisory consensus).",
+      "primary_metric_isolated": "unsafe_approval_rate"
+    },
+    {
+      "ablation_id": "no_validation",
+      "delta_from_full": "Skip assess_specialist schema/rule/binding checks on specialist JSON.",
+      "primary_metric_isolated": "malformed_and_invalid_containment_rate"
+    },
+    {
+      "ablation_id": "no_certificates",
+      "delta_from_full": "Disable CertificateSystem dependency hash & version staleness checks.",
+      "primary_metric_isolated": "stale_decision_rate"
+    },
+    {
+      "ablation_id": "no_provenance",
+      "delta_from_full": "Disable Ed25519 EventDAG signatures & persisted checkpointing.",
+      "primary_metric_isolated": "tamper_detection_and_lineage_auditability"
+    },
+    {
+      "ablation_id": "no_recovery",
+      "delta_from_full": "Execute full clean rerun instead of selective dependency recovery on claim updates.",
+      "primary_metric_isolated": "post_update_calls_tokens_latency_and_equivalence"
+    }
+  ],
+  "test_set_executed_in_phase5": false
+}

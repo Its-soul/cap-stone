@@ -9,7 +9,7 @@ import math
 import random
 from typing import Any, Callable, Sequence
 
-from .frozen_v1 import SWEEP_SEEDS
+from .benchmark_v1 import SWEEP_SEEDS
 
 PROTOCOL_VERSION = "protocol-v1"
 BOOTSTRAP_RESAMPLES = 2000

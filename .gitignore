@@ -73,3 +73,14 @@ Thumbs.db
 *.swp
 *~
 
+
+# Keep private artifacts, manuscripts, temp repro dumps, and secrets out of public repo
+_private/
+manuscript/
+results/*_repro/
+results/verify_tmp/
+*.pem
+*.key
+*private_key*
+*.pdf
+.env
