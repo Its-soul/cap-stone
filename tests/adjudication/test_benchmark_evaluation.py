@@ -11,6 +11,7 @@ from cert_recovery.adjudication.domain import InsuranceClaim, rule_decision
 from cert_recovery.adjudication.pilot_runner import FakeRoleSpecialistClient
 from cert_recovery.oracle.benchmark_eval import (
     _load_jsonl,
+    _resolve_repo_path,
     _single_agent_prompt,
     rebuild_phase6_tables,
     run_live_phase6,
@@ -22,6 +23,11 @@ from scripts.run_benchmark_evaluation import main as phase6_main
 pytestmark = pytest.mark.adjudication
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_manifest_paths_with_windows_separators_resolve_on_posix():
+    path = _resolve_repo_path(r"datasets\benchmark_v1\dev_inputs.jsonl", REPO_ROOT)
+    assert path == REPO_ROOT / "datasets" / "benchmark_v1" / "dev_inputs.jsonl"
 
 
 def test_frozen_hash_preflight_detects_tampering(tmp_path: Path):
