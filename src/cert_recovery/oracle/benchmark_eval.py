@@ -74,7 +74,7 @@ def _sha256_file(path: Path) -> str:
 
 
 def _resolve_repo_path(raw_path: str, repo_root: Path) -> Path:
-    p = Path(raw_path)
+    p = Path(raw_path.replace("\\", "/"))
     return p if p.is_absolute() else (repo_root / p)
 
 

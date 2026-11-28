@@ -115,7 +115,7 @@ def freeze_phase5(
     }
     for name, fpath in files.items():
         hashes[name] = {
-            "path": str(fpath),
+            "path": str(fpath).replace("\\", "/"),
             "sha256": _sha256_file(fpath),
         }
 

@@ -157,6 +157,7 @@ def test_phase5_freeze_inputs_labels_separated_and_hashes_reproducible(tmp_path:
         "test_update_oracle_labels",
     ):
         assert m1["hashes"][key]["sha256"] == m2["hashes"][key]["sha256"]
+        assert "\\" not in m1["hashes"][key]["path"]
 
     # Confirm test_inputs.jsonl carries zero oracle labels
     first_input = json.loads((d1 / "test_inputs.jsonl").read_text(encoding="utf-8").splitlines()[0])
