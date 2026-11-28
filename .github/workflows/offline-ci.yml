@@ -27,7 +27,7 @@ jobs:
       - name: Install core and test dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[test]"
+          python -m pip install -e ".[test,remote]"
 
       - name: Run offline pytest suite
         run: python -m pytest tests -q
