@@ -1,0 +1,13 @@
+world_id,baseline,safe_commits,total_commits,total_tasks,support_valid_commit_rate,useful_completion_rate,configured_work_units,blocked_tasks,declared_impact_precision,declared_impact_recall,recovery_success_rate,evidence_status
+independent-update,A_full_recomputation,2,2,2,1.0,1.0,12.0,0,,,,executed_locally_synthetic
+independent-update,B_no_invalidation,1,2,2,0.5,0.5,0.0,0,,,,executed_locally_synthetic
+independent-update,C_invalidation_only,1,1,2,1.0,0.5,1.0,1,1.0,1.0,,executed_locally_synthetic
+independent-update,proposed,2,2,2,1.0,1.0,7.0,0,1.0,1.0,1.0,executed_locally_synthetic
+cascade-update,A_full_recomputation,3,3,3,1.0,1.0,18.0,0,,,,executed_locally_synthetic
+cascade-update,B_no_invalidation,0,3,3,0.0,0.0,0.0,0,,,,executed_locally_synthetic
+cascade-update,C_invalidation_only,0,0,3,,0.0,1.0,3,1.0,1.0,,executed_locally_synthetic
+cascade-update,proposed,3,3,3,1.0,1.0,17.0,0,1.0,1.0,1.0,executed_locally_synthetic
+independent-untrusted,A_full_recomputation,1,1,2,1.0,0.5,6.0,1,,,,executed_locally_synthetic
+independent-untrusted,B_no_invalidation,1,2,2,0.5,0.5,0.0,0,,,,executed_locally_synthetic
+independent-untrusted,C_invalidation_only,1,1,2,1.0,0.5,1.0,1,1.0,1.0,,executed_locally_synthetic
+independent-untrusted,proposed,1,1,2,1.0,0.5,1.0,1,1.0,1.0,0.0,executed_locally_synthetic
